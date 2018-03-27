@@ -1,0 +1,47 @@
+@charset "utf-8";
+@import "../../css/global";
+.SW_TE_text_cont {
+  overflow: visible !important;
+  word-wrap: break-word;
+  ul {
+    list-style: disc;
+    padding-left: 40px;
+  }
+
+  h1 {
+    font-size: 25px;
+  }
+
+  img{
+    border: 10px solid transparent;
+    @include vendor-prefix("box-sizing","border-box");
+    &[align=bottom]{
+      border-left: 0;
+      border-right: 0;
+    }
+    &[align=left] {
+      border-left: 0;
+    }
+    &[align=right] {
+      border-right: 0;
+    }
+  }
+
+  .SW_TE_iframe_video {
+    margin: 10px 0;
+    position: relative;
+    display: block;
+    > iframe {
+      width: 100%;
+    }
+  }
+
+  .SW_TE_line_break{
+    width: 100%;
+    height: 0;
+    border-top: 1px dashed transparent;
+    display: block;
+    overflow: hidden;
+  }
+
+}

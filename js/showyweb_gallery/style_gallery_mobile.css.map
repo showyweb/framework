@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,+MACgJ;EAI9I,0CAA2C;IAEzC,KAAK,EAHK,IAAI;IAId,MAAM,EAJI,IAAI;;EAMhB,8CAA+C;IAC7C,SAAS,EAAE,IAAI;IACf,WAAW,EAAE,IAAI;;EAInB,sDAAuD;IACrD,IAAI,EAAE,IAAa;IACnB,KAAK,EAAE,IAAa",
+"sources": ["style_gallery_mobile.scss"],
+"names": [],
+"file": "style_gallery_mobile.css"
+}

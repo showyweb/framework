@@ -1,0 +1,49 @@
+
+#grecaptcha_element {
+  padding: 5px; }
+
+.login_form {
+  font-size: 18px; }
+  .login_form input {
+    border: 2px solid #bfbfbf;
+    background-color: white;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: normal;
+    padding: 5px 10px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-transition-property: all;
+    -moz-transition-property: all;
+    -ms-transition-property: all;
+    -o-transition-property: all;
+    transition-property: all;
+    -webkit-transition-duration: 200ms;
+    -moz-transition-duration: 200ms;
+    -ms-transition-duration: 200ms;
+    -o-transition-duration: 200ms;
+    transition-duration: 200ms;
+    -webkit-transition-timing-function: ease;
+    -moz-transition-timing-function: ease;
+    -ms-transition-timing-function: ease;
+    -o-transition-timing-function: ease;
+    transition-timing-function: ease; }
+    .login_form input:focus {
+      border-color: #328ede;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow:  0 0 5px 0 rgba(50, 142, 222, 0.55);
+      -moz-box-shadow:  0 0 5px 0 rgba(50, 142, 222, 0.55);
+      -ms-box-shadow:  0 0 5px 0 rgba(50, 142, 222, 0.55);
+      -o-box-shadow:  0 0 5px 0 rgba(50, 142, 222, 0.55);
+      box-shadow:  0 0 5px 0 rgba(50, 142, 222, 0.55); }
+  .login_form table tr:first-child input {
+    margin-bottom: 5px; }
+  .login_form table tr td:first-child {
+    padding-right: 5px; }
+
+/*# sourceMappingURL=core_authorization.css.map */

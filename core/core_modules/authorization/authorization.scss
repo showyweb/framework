@@ -1,0 +1,40 @@
+@charset "utf-8";
+@import "../../../css/global";
+#grecaptcha_element{
+  padding: 5px;
+}
+.login_form{
+  font-size: 18px;
+
+
+  input {
+    border: 2px solid #bfbfbf;
+    background-color: white;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: normal;
+    padding: 5px 10px;
+    @include border-radius(4px);
+    @include quick_animate(200ms);
+    &:focus {
+
+      border-color: #328ede;
+      @include box-shadow(false, 0, 0, 5px, 0, rgba(50, 142, 222, 0.55));
+    }
+  }
+
+  table {
+    tr{
+      &:first-child{
+        input{
+          margin-bottom: 5px;
+        }
+      }
+      td{
+        &:first-child{
+          padding-right: 5px;
+        }
+      }
+    }
+  }
+}

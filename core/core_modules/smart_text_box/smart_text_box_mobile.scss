@@ -1,0 +1,148 @@
+@charset "utf-8";
+@import "/images/font-awesome-4.7.0/css/font-awesome.min.css";
+@import "../../css/global";
+
+.smart_text_box {
+
+}
+
+.smart_text_box + textarea {
+  /*background-color: red;*/
+  width: 99%;
+  font: inherit;
+  resize: none;
+  /*background-color: transparent;*/
+}
+
+.smart_text_box_edit_button {
+  display: block;
+  position: relative;
+  width: 100%;
+
+}
+
+.close_fix {
+  width: auto !important;
+  display: inline-block !important;
+  float: left;
+}
+
+.smart_text_box_close_button {
+  margin-left: 20px;
+  width: auto !important;
+  display: inline-block !important;
+
+}
+
+.smart_text_box_edit_button, .smart_text_box_close_button {
+  text-shadow: none !important;
+  /*font-size: 15px !important;*/
+  text-transform: none !important;
+}
+
+.text_window {
+  display: block;
+  position: fixed;
+  @include reset_offsets;
+
+  >div{
+    display: none;
+    visibility: hidden;
+    vertical-align: middle;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    h1 {
+      color: #000000;
+      font-size: 15px;
+      margin-bottom: 5px;
+    }
+    .close_text_window {
+      @include disable_default_style_a;
+      position: absolute;
+      $offset: -27px;
+      right: $offset;
+      top: $offset;
+      display: block;
+      float: right;
+      width: 25px;
+      height: 25px;
+      //background-color: red;
+      > i {
+        font-size: 28px;
+      }
+    }
+
+    > div {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+      position: relative;
+
+      > div {
+        position: relative;
+        text-align: left;
+        /*background-color: white;*/
+        background-color: rgba(255, 255, 255, 1);
+
+        -ms-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -moz-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -o-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -webkit-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        border-radius: 5px;
+        width: 80%;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: inline-block;
+        > div {
+          padding: 20px;
+
+        }
+      }
+    }
+  }
+
+}
+
+%focus {
+
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.smart_text_box {
+  position: relative;
+  display: inline-block;
+  > span[data-contenteditable='true']:hover {
+    @extend %focus;
+  }
+  > span[contenteditable='true'] {
+    @extend %focus;
+    cursor: text !important;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  > a {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000000;
+  }
+
+  > a > i {
+    display: none;
+    margin-left: 10px;
+    font-size: inherit;
+    cursor: pointer;
+  }
+  &.focus {
+    > a > i {
+      display: inline-block;
+    }
+  }
+}

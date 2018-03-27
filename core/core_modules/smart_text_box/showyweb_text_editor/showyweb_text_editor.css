@@ -1,0 +1,181 @@
+#SW_TE_visual_tolls {
+  opacity: 0;
+  position: absolute;
+  background-color: #fff;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  -ms-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  -o-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  visibility: hidden;
+  -webkit-transform: perspective(800px) rotate3d(1, 0, 0, 90deg);
+  -moz-transform: perspective(800px) rotate3d(1, 0, 0, 90deg);
+  -ms-transform: perspective(800px) rotate3d(1, 0, 0, 90deg);
+  -o-transform: perspective(800px) rotate3d(1, 0, 0, 90deg);
+  transform: perspective(800px) rotate3d(1, 0, 0, 90deg);
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  -ms-transform-style: preserve-3d;
+  -o-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transform-origin: 0 0;
+  -moz-transform-origin: 0 0;
+  -ms-transform-origin: 0 0;
+  -o-transform-origin: 0 0;
+  transform-origin: 0 0;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -ms-transition-property: all;
+  -o-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 300ms;
+  -moz-transition-duration: 300ms;
+  -ms-transition-duration: 300ms;
+  -o-transition-duration: 300ms;
+  transition-duration: 300ms;
+  -webkit-transition-timing-function: ease;
+  -moz-transition-timing-function: ease;
+  -ms-transition-timing-function: ease;
+  -o-transition-timing-function: ease;
+  transition-timing-function: ease; }
+  #SW_TE_visual_tolls.show {
+    -webkit-transform: perspective(800px) rotate3d(1, 0, 0, 0deg);
+    -moz-transform: perspective(800px) rotate3d(1, 0, 0, 0deg);
+    -ms-transform: perspective(800px) rotate3d(1, 0, 0, 0deg);
+    -o-transform: perspective(800px) rotate3d(1, 0, 0, 0deg);
+    transform: perspective(800px) rotate3d(1, 0, 0, 0deg);
+    visibility: visible;
+    opacity: 1; }
+  #SW_TE_visual_tolls.code_show > a:not([href="#code"]) {
+    opacity: 0.5;
+    pointer-events: none; }
+  #SW_TE_visual_tolls > a {
+    color: #000000;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    width: 35px;
+    padding: 5px 0;
+    -webkit-transition-property: all;
+    -moz-transition-property: all;
+    -ms-transition-property: all;
+    -o-transition-property: all;
+    transition-property: all;
+    -webkit-transition-duration: 100ms;
+    -moz-transition-duration: 100ms;
+    -ms-transition-duration: 100ms;
+    -o-transition-duration: 100ms;
+    transition-duration: 100ms;
+    -webkit-transition-timing-function: ease;
+    -moz-transition-timing-function: ease;
+    -ms-transition-timing-function: ease;
+    -o-transition-timing-function: ease;
+    transition-timing-function: ease; }
+    #SW_TE_visual_tolls > a.hide {
+      display: none; }
+    #SW_TE_visual_tolls > a:hover, #SW_TE_visual_tolls > a.active {
+      background-color: #000000; }
+      #SW_TE_visual_tolls > a:hover > i, #SW_TE_visual_tolls > a.active > i {
+        color: #ffffff; }
+    #SW_TE_visual_tolls > a > i {
+      color: #000000;
+      font-size: 25px;
+      -webkit-transition-property: all;
+      -moz-transition-property: all;
+      -ms-transition-property: all;
+      -o-transition-property: all;
+      transition-property: all;
+      -webkit-transition-duration: 100ms;
+      -moz-transition-duration: 100ms;
+      -ms-transition-duration: 100ms;
+      -o-transition-duration: 100ms;
+      transition-duration: 100ms;
+      -webkit-transition-timing-function: ease;
+      -moz-transition-timing-function: ease;
+      -ms-transition-timing-function: ease;
+      -o-transition-timing-function: ease;
+      transition-timing-function: ease; }
+  #SW_TE_visual_tolls > .SW_TE_line_separator {
+    width: 1px;
+    height: 100%;
+    background-color: #000000; }
+  #SW_TE_visual_tolls > * {
+    float: left;
+    margin-right: 2px; }
+
+.SW_TE_text_cont[contenteditable=true], .SW_TE_text_cont:hover {
+  -webkit-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -moz-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -ms-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -o-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1); }
+.SW_TE_text_cont.disabled {
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  -ms-box-shadow: none !important;
+  -o-box-shadow: none !important;
+  box-shadow: none !important; }
+.SW_TE_text_cont[contenteditable=true] {
+  -webkit-user-select: text;
+  user-select: text; }
+  .SW_TE_text_cont[contenteditable=true] .SW_TE_iframe_video:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0; }
+.SW_TE_text_cont .SW_TE_line_break {
+  border-color: black; }
+
+#SW_TE_link_edit {
+  margin-top: 10px; }
+  #SW_TE_link_edit td {
+    padding-top: 5px; }
+
+#SW_TE_img_edit td {
+  padding-top: 5px; }
+  #SW_TE_img_edit td i {
+    display: none;
+    margin-left: 5px; }
+    #SW_TE_img_edit td i.show {
+      display: inline; }
+#SW_TE_img_edit input[type=text], #SW_TE_img_edit input[type=number] {
+  margin-right: 5px; }
+#SW_TE_img_edit input[name=width], #SW_TE_img_edit input[name=height] {
+  width: 50px; }
+#SW_TE_img_edit select {
+  width: 95px; }
+
+#SW_TE_video_edit td {
+  padding-top: 5px; }
+#SW_TE_video_edit #qsrxSearchbar input {
+  width: 100%; }
+#SW_TE_video_edit #qsrxSearchbar label {
+  float: left; }
+#SW_TE_video_edit #qsrxSearchbar span {
+  display: block;
+  overflow: hidden;
+  padding: 0 5px; }
+#SW_TE_video_edit #qsrxSearchbar input, #SW_TE_video_edit .formLine button {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box; }
+#SW_TE_video_edit input[name=remove] {
+  margin-left: 5px; }
+
+#SW_TE_html_edit {
+  width: 100%; }
+  #SW_TE_html_edit tr td {
+    padding-bottom: 5px; }
+    #SW_TE_html_edit tr td textarea {
+      resize: vertical;
+      width: 100%;
+      height: 60vh; }
+    #SW_TE_html_edit tr td p {
+      color: red;
+      font-size: 14px; }
+  #SW_TE_html_edit tr:last-child td {
+    padding-bottom: 0; }
+
+/*# sourceMappingURL=showyweb_text_editor.css.map */

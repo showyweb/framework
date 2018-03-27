@@ -1,0 +1,96 @@
+.showyweb_gallery_item {
+  cursor: zoom-in; }
+
+.showyweb_gallery_full_screen {
+  display: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.5); }
+  .showyweb_gallery_full_screen.show {
+    display: block !important; }
+  .showyweb_gallery_full_screen.load > div.loader {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    display: table; }
+    .showyweb_gallery_full_screen.load > div.loader > a {
+      color: #000000;
+      text-decoration: none;
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center; }
+      .showyweb_gallery_full_screen.load > div.loader > a > i {
+        color: white;
+        font-size: 100px; }
+  .showyweb_gallery_full_screen > div {
+    width: 100%;
+    height: 100%;
+    max-width: 1366px;
+    position: relative;
+    margin: 0 auto; }
+    .showyweb_gallery_full_screen > div.loader {
+      display: none; }
+    .showyweb_gallery_full_screen > div .arrow {
+      color: #000000;
+      text-decoration: none;
+      background-repeat: no-repeat;
+      background-size: contain;
+      width: 75px;
+      height: 75px;
+      display: inline-block;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      margin: auto;
+      text-align: center; }
+      .showyweb_gallery_full_screen > div .arrow > i {
+        font-size: 120px;
+        line-height: 68px;
+        color: white; }
+    .showyweb_gallery_full_screen > div .arrow_left {
+      left: 0;
+      right: auto; }
+    .showyweb_gallery_full_screen > div .close, .showyweb_gallery_full_screen > div .link {
+      color: #000000;
+      text-decoration: none;
+      position: absolute;
+      right: 10px;
+      top: 10px; }
+      .showyweb_gallery_full_screen > div .close > i, .showyweb_gallery_full_screen > div .link > i {
+        color: white;
+        font-size: 35px;
+        line-height: 32px;
+        text-align: right;
+        width: 32px; }
+    .showyweb_gallery_full_screen > div .link {
+      right: auto;
+      left: 10px; }
+    .showyweb_gallery_full_screen > div .items {
+      display: block;
+      width: 100%;
+      height: 100%; }
+      .showyweb_gallery_full_screen > div .items > div {
+        cursor: pointer;
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0; }
+        .showyweb_gallery_full_screen > div .items > div > div {
+          position: absolute;
+          display: block;
+          top: 50px;
+          bottom: 50px;
+          left: 110px;
+          right: 110px;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: contain; }
+
+/*# sourceMappingURL=style_gallery.css.map */

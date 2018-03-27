@@ -1,0 +1,255 @@
+@mixin vendor-prefix($name, $value) {
+  @each $vendor in ('-webkit-', '-moz-', '-ms-', '-o-', '') {
+    #{$vendor}#{$name}: #{$value};
+  }
+}
+
+@mixin css_styles_reset {
+  html {
+    -webkit-text-size-adjust: none; /* Prevent font scaling in landscape */
+  }
+
+  html, body, div, span, applet, object, iframe,
+  h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+  a, abbr, acronym, address, big, cite, code,
+  del, dfn, em, font, img, ins, kbd, q, s, samp,
+  small, strike, strong, sub, sup, tt, var,
+  dl, dt, dd, ol, ul, li,
+  fieldset, form, label, legend,
+  tfoot, thead {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+  }
+
+  caption, table, tbody, tr, th, td {
+    outline: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-image: none;
+  }
+
+  *:focus {
+    outline: 0;
+  }
+
+  ol, ul {
+    list-style: none;
+  }
+
+  blockquote:before, blockquote:after,
+  q:before, q:after {
+    content: "";
+  }
+
+  blockquote, q {
+    quotes: "" "";
+  }
+}
+
+@mixin if_max-width($width) {
+  @media screen and (max-width: $width) {
+    @content;
+  }
+}
+
+@mixin if_min-width($width) {
+  @media screen and (min-width: $width) {
+    @content;
+  }
+}
+
+@mixin if_min-width_and_max-width($min_width,$max_width) {
+  @media screen and (min-width: $min_width) and (max-width: $max_width) {
+    @content;
+  }
+}
+
+@mixin if_max-height($height) {
+  @media screen and (max-height: $height) {
+    @content;
+  }
+}
+
+@mixin if_min-height($height) {
+  @media screen and (min-height: $height) {
+    @content;
+  }
+}
+
+@mixin if_min-width_and_min-height($width, $height) {
+  @media screen and (min-width: $width) and (min-height: $height) {
+    @content;
+  }
+}
+
+@mixin if_max-width_and_max-height($width, $height) {
+  @media screen and (max-width: $width) and (max-height: $height) {
+    @content;
+  }
+}
+
+@mixin if_max-width_or_max-height($width, $height) {
+  @media screen and (max-width: $width), screen and (max-height: $height) {
+    @content;
+  }
+}
+
+@mixin if_retina {
+  @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5) {
+    @content;
+  }
+}
+
+@mixin if_firefox {
+  @-moz-document url-prefix() {
+    @content;
+  }
+}
+
+@mixin if_old_opera($selector) {
+  noindex:-o-prefocus, #{$selector} {
+    @content;
+  }
+}
+
+@mixin if_ie($selector) {
+  :root #{$selector} {
+    @content;
+  }
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  -ms-border-radius: $radius;
+  -o-border-radius: $radius;
+  border-radius: $radius;
+}
+
+@mixin box-shadow($inset:false, $x_offset:0, $y_offset:0, $blur_radius:0, $stretch_radius:0, $color:'black') {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  @if $inset == true {
+    $inset: 'inset';
+  } @else {
+    $inset: '';
+  }
+  @include vendor-prefix(box-shadow, $inset $x_offset $y_offset $blur_radius $stretch_radius $color);
+}
+
+@mixin disable_default_style_a {
+  color: #000000;
+  text-decoration: none;
+}
+
+@mixin rotate($angle) {
+  -webkit-transform: rotate($angle);
+  -moz-transform: rotate($angle);
+  -ms-transform: rotate($angle);
+  transform: rotate($angle);
+}
+
+@mixin translate3d($x:0, $y:0, $z:0) {
+  @include vendor-prefix(transform, translate($x, $y) translate3d($x, $y, $z));
+}
+
+@mixin disable_user_select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+@mixin will-change($props) {
+  @include vendor-prefix(will-change, $props);
+}
+
+@mixin quick_animate($speed, $property:all, $will_change_use:true) {
+  //@include vendor-prefix(transition, $property $speed ease);
+  @include vendor-prefix(transition-property, $property);
+  @include vendor-prefix(transition-duration, $speed);
+  @include vendor-prefix(transition-timing-function, ease);
+  @if $property != 'all' and $will_change_use==true {
+    @include will-change($property);
+  }
+}
+
+@mixin quick_keyframes_animate($keyframes_name, $duration, $delay, $will-change:auto) {
+  @include vendor-prefix(animation-name, $keyframes_name);
+  @include vendor-prefix(animation-duration, $duration);
+  @include vendor-prefix(animation-delay, $delay);
+  @include vendor-prefix(animation-fill-mode, forwards);
+  //@include vendor-prefix(animation-iteration-count, 0);
+  @if $will-change != 'auto' {
+    @include will-change($will-change);
+  }
+
+}
+
+@mixin reverse_keyframes_animate() {
+  @include vendor-prefix(animation-direction, reverse);
+}
+
+@mixin running_keyframes_animate() {
+  @include vendor-prefix(animation-play-state, running);
+}
+
+@mixin paused_keyframes_animate() {
+  @include vendor-prefix(animation-play-state, paused);
+}
+
+@mixin keyframes($keyframes_name) {
+  @-moz-keyframes #{$keyframes_name} {
+    @content;
+  }
+  @-ms-keyframes #{$keyframes_name} {
+    @content;
+  }
+  @-o-keyframes #{$keyframes_name} {
+    @content;
+  }
+  @-webkit-keyframes #{$keyframes_name} {
+    @content;
+  }
+  @keyframes #{$keyframes_name} {
+    @content;
+  }
+}
+
+@mixin reset_offsets() {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+@mixin background-image-defaults() {
+  -webkit-background-size: contain;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@mixin blur($size) {
+  -webkit-filter: blur($size);
+  -moz-filter: blur($size);
+  -o-filter: blur($size);
+  filter: blur($size);
+}
+
+@mixin scale($scale_size) {
+  @include vendor-prefix(transform, scale($scale_size, $scale_size));
+}

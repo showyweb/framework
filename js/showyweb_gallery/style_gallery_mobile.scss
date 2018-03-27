@@ -1,0 +1,27 @@
+@media screen and (max-width: 750px) and (orientation: portrait)
+, screen and (max-width: 400px), screen and (max-width: 750px) and (min-width: 290px) and (orientation: landscape) and (orientation: landscape) {
+
+
+  $arrow_size:40px;
+  .showyweb_gallery_full_screen > div .arrow {
+
+    width: $arrow_size;
+    height: $arrow_size;
+  }
+  .showyweb_gallery_full_screen > div .arrow > i {
+    font-size: 70px;
+    line-height: 35px;
+  }
+
+
+  .showyweb_gallery_full_screen > div .items > div > div {
+    left: $arrow_size+5;
+    right: $arrow_size+5;
+  }
+}
+
+//@media screen and (max-width: 750px) and (min-width: 290px) and (orientation: landscape) {
+//
+//
+//
+//}

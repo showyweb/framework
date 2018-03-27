@@ -1,0 +1,14 @@
+@media screen and (max-width: 750px) and (orientation: portrait), screen and (max-width: 400px), screen and (max-width: 750px) and (min-width: 290px) and (orientation: landscape) and (orientation: landscape) {
+  .showyweb_gallery_full_screen > div .arrow {
+    width: 40px;
+    height: 40px; }
+
+  .showyweb_gallery_full_screen > div .arrow > i {
+    font-size: 70px;
+    line-height: 35px; }
+
+  .showyweb_gallery_full_screen > div .items > div > div {
+    left: 45px;
+    right: 45px; } }
+
+/*# sourceMappingURL=style_gallery_mobile.css.map */

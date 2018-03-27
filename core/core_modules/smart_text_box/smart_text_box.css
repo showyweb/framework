@@ -1,0 +1,122 @@
+@import url(/images/font-awesome-4.7.0/css/font-awesome.min.css);
+.smart_text_box + textarea {
+  /*background-color: red;*/
+  width: 99%;
+  font: inherit;
+  resize: none;
+  /*background-color: transparent;*/ }
+
+.smart_text_box_edit_button {
+  display: block;
+  position: relative;
+  width: 100%; }
+
+.close_fix {
+  width: auto !important;
+  display: inline-block !important;
+  float: left; }
+
+.smart_text_box_close_button {
+  margin-left: 20px;
+  width: auto !important;
+  display: inline-block !important; }
+
+.smart_text_box_edit_button, .smart_text_box_close_button {
+  text-shadow: none !important;
+  /*font-size: 15px !important;*/
+  text-transform: none !important; }
+
+.text_window {
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  border: none; }
+  .text_window > div {
+    display: none;
+    visibility: hidden;
+    vertical-align: middle;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.6); }
+    .text_window > div h1 {
+      color: #000000;
+      font-size: 20px;
+      margin-bottom: 5px; }
+    .text_window > div .close_text_window {
+      color: #000000;
+      text-decoration: none;
+      position: absolute;
+      right: -27px;
+      top: -27px;
+      display: block;
+      float: right;
+      width: 25px;
+      height: 25px; }
+      .text_window > div .close_text_window > i {
+        font-size: 28px; }
+    .text_window > div > div {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+      position: relative; }
+      .text_window > div > div > div {
+        position: relative;
+        text-align: left;
+        /*background-color: white;*/
+        background-color: white;
+        -ms-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -moz-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -o-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        -webkit-box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        box-shadow: 0px 0px 3px 1px rgba(12, 13, 14, 0.26);
+        border-radius: 5px;
+        width: 80%;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: inline-block;
+        -webkit-overflow-scrolling: touch; }
+        .text_window > div > div > div > div {
+          padding: 20px; }
+
+.smart_text_box > span[data-contenteditable='true']:hover, .smart_text_box > span[contenteditable='true'] {
+  -webkit-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -moz-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -ms-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  -o-box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1);
+  box-shadow: inset 0 0px 5px 1px rgba(255, 255, 255, 1), 0 0 5px 1px rgba(82, 168, 236, 1); }
+
+.smart_text_box {
+  position: relative;
+  display: inline; }
+  .smart_text_box > span[contenteditable='true'] {
+    cursor: text !important;
+    -webkit-user-select: text;
+    user-select: text; }
+  .smart_text_box.disabled > span {
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    -ms-box-shadow: none !important;
+    -o-box-shadow: none !important;
+    box-shadow: none !important; }
+  .smart_text_box > a {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000000; }
+  .smart_text_box > a > i {
+    display: none;
+    margin-left: 10px;
+    font-size: inherit;
+    cursor: pointer; }
+  .smart_text_box.focus > a > i {
+    display: inline-block; }
+
+/*# sourceMappingURL=smart_text_box.css.map */
