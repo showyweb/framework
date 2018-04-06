@@ -4,7 +4,7 @@ class cache_img
 {
     static $path_cache_ = ".cache/cache_img";
 
-    function __construct()
+  static function main()
     {
         global $root;
         import_custom_library("FastBackground/fast_background.php");
@@ -25,5 +25,6 @@ class cache_img
             $url = $fb->get_url(get_request('dynamic_url'), true, $size, $size);
             redirect("", $url);
         }
+        return "";
     }
 }

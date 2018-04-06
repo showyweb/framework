@@ -16,6 +16,7 @@ function findHighestZIndex(jq_elem_level) {
     // console.log(highest+" "+ highest_elem[0].nodeName+" "+ highest_elem.attr('id') + " " + highest_elem.attr('class'));
     return highest;
 }
+
 var utf8_encode = function (string) {
     string = string.replace(/\r\n/g, "\n");
     var utftext = "";
@@ -198,6 +199,7 @@ function get_ajax(module, query_object, callback_function, custom_alert) {
             callback_function(data);
         });
 }
+
 function get_ajax_href(module, href, callback_function, custom_alert) {
     var query_object = {'ajax_module': module};
     $.get(href, query_object,
@@ -229,7 +231,7 @@ function get_ajax_href(module, href, callback_function, custom_alert) {
         });
 }
 
-function post_ajax(module, query_object, callback_function, custom_alert) {
+function post_ajax(module, query_object, callback_function, is_show_error_in_popup) {
     query_object.ajax_module = module;
     var obj = $.post(window.location.href.replace(window.location.hash, ""), query_object,
         function (data) {
@@ -238,10 +240,10 @@ function post_ajax(module, query_object, callback_function, custom_alert) {
             var check = "<->ajax_complete<->";
             var check_result = data.substring(data.length - check.length);
             if (check_result != check) {
-                if (custom_alert)
+                if (is_show_error_in_popup)
                     smart_text_box.show_text_window(data);
                 else
-                    alert("ERROR GET AJAX: " + data);
+                    console.log("ERROR GET AJAX: " + data);
                 callback_function(null);
                 return;
             }
@@ -252,11 +254,11 @@ function post_ajax(module, query_object, callback_function, custom_alert) {
         .fail(function (xhr, status, error) {
             if (page_unloaded)
                 return;
-            if (custom_alert)
+            if (is_show_error_in_popup)
                 smart_text_box.show_text_window("ERROR GET AJAX: <div style='white-space: pre-wrap; word-wrap:break-word;'>" + window.location.href + " " + $.toJSON(query_object) +
                     "</div><br>ERROR TEXT: " + error);
             else
-                alert("ERROR GET AJAX: " + error);
+                console.log("ERROR GET AJAX: " + error);
             callback_function(null);
         });
 }
@@ -432,8 +434,8 @@ var decodeEscapeSequence = function (str) {
 
 isEmptyObject = function (obj) {
     if (obj == null) return true;
-    if (obj.length > 0)    return false;
-    if (obj.length === 0)  return true;
+    if (obj.length > 0) return false;
+    if (obj.length === 0) return true;
     if (typeof obj !== "object") return true;
     for (var key in obj)
         if (obj.hasOwnProperty(key)) return false;

@@ -16,6 +16,11 @@ class notify
     private $db = null;
     public $db_s = null;
 
+    static function main()
+    {
+        new static();
+    }
+
     public function __construct()
     {
         $this->db_s = new notify_db_c();

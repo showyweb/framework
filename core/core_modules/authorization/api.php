@@ -45,6 +45,63 @@ class authorization_api
         return $this;
     }
 
+    static function is_authorized()
+    {
+        if(is_background_job())
+            return true;
+        global $vers;
+        if(isset($_SESSION['user_id']) and isset($_SESSION['ver']) and $_SESSION['ver'] == $vers)
+            return true;
+        else
+            return false;
+    }
+
+    static function user_is_role($role)
+    {
+        if(is_background_job())
+            return true;
+        if(static::is_authorized() and $_SESSION["role"] == $role)
+            return true;
+        else
+            return false;
+    }
+
+    static function is_admin()
+    {
+        if(is_background_job())
+            return true;
+        return static::user_is_role(authorization_api::$roles['admin']);
+    }
+
+    static function is_moderator()
+    {
+        if(is_background_job())
+            return true;
+        return static::user_is_role(authorization_api::$roles['moderator']);
+    }
+
+    static function is_user()
+    {
+        if(is_background_job())
+            return true;
+        return static::user_is_role(authorization_api::$roles['user']);
+    }
+
+    static function get_current_login()
+    {
+        if(!static::is_authorized())
+            return null;
+        return $_SESSION['login'];
+    }
+
+
+    static function check_admin()
+    {
+        if(!static::is_admin())
+            error_alert_not_log('Недостаточно прав');
+    }
+
+
     private function get_db_reg()
     {
         if(is_null($this->db_reg))
@@ -85,10 +142,25 @@ class authorization_api
         return $newid;
     }
 
+    function edit_login($login, $new_login)
+    {
+        $db = $this->db;
+        $res_login = $this->get_user($login);
+        if(is_null($res_login))
+            error("login $login not found");
+        $res_new_login = $this->get_user($new_login);
+        if(!is_null($res_new_login))
+            error("login $new_login already exist");
+        $rec = [
+            'login' => $new_login,
+        ];
+        $db->insert($rec, $res_login['id']);
+        $_SESSION['login'] = $new_login;
+    }
+
     function remove_user($login, $xss_filter = true)
     {
         $db = $this->db;
-        check_admin();
         $res = $this->get_user($login, static::$roles['admin'], $xss_filter);
         if(is_null($res))
             error("login $login not found");
@@ -100,11 +172,9 @@ class authorization_api
     //
     //    }
 
-    function _edit_password($login, $password, $new_password)
+    function edit_password($login, $password, $new_password)
     {
         $db = $this->db;
-        if(!is_authorized())
-            error('Ошибка доступа');
         $password = xss_filter($password);
         $new_password = xss_filter($new_password);
         $login = xss_filter($login);
@@ -115,7 +185,7 @@ class authorization_api
         $salt = $result['salt'];
         $text_to_check_password = substr($password, 0, 50);
         $password = md5(md5($text_to_check_password) . $salt);
-        if($result['password'] == $password || (is_admin() && $result['role'] != static::$roles['admin']) || (is_moderator() && $result['role'] == static::$roles['user'])) {
+        if($result['password'] == $password || (static::is_admin() && $result['role'] != static::$roles['admin']) || (static::is_moderator() && $result['role'] == static::$roles['user'])) {
             $id = $result['id'];
             $salt = $this->GenerateSalt();
             $hashed_password = md5(md5($new_password) . $salt);
@@ -141,7 +211,6 @@ class authorization_api
     function set_notify_contacts($login, $email, $phone, $sms_ru_api_id = null, $sipnet_ru_id = null, $sipnet_ru_password = null, $call_hour_start = null, $call_hour_end = null)
     {
         $db = $this->db;
-        check_admin();
         $login = xss_filter($login);
         $result = $this->get_user($login, static::$roles['admin']);
         if(is_null(null))

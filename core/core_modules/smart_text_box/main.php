@@ -1,7 +1,7 @@
 <?php
 
 class smart_text_box {
-    function __construct()
+   static function main()
     {
         $settings = get_settings();
         $box_exec = new smart_text_box_ext();
@@ -12,13 +12,11 @@ class smart_text_box {
                     $box_exec->update_box(get_request('name'), get_request('data',false));
                     break;
                 case 'add_cc_img_in_box':
-                    append($box_exec->add_cc_img_in_box(get_request('name'),'uploaded-img'));
-                    return $this;
+                    return $box_exec->add_cc_img_in_box(get_request('name'),'uploaded-img');
                     break;
             }
-            return $this;
+            return "";
         }
-        $box_exec->show_text_box($settings['name']);
-        return $this;
+       return $box_exec->show_text_box($settings['name']);
     }
 }

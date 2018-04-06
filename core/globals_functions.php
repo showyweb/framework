@@ -1,16 +1,43 @@
 <?php
-$is_root_template = true;
-function render_template($pattern_name, array $variables = [])
+$is_root_template = !is_ajax();
+$g_pattern_i = 0;
+$cur_variables = [];
+function set_variables(array $variables = [])
 {
-    global $root, $module_settings, $cms_result, $core_pattern, $is_root_template;
-    $pattern_cache_name = str_replace("/", "_", $pattern_name);
-    if(!file_exists($root . '.cache/page_patterns/' . $pattern_cache_name) or filemtime($root . '.cache/page_patterns/' . $pattern_cache_name) < filemtime($root . 'modules/' . $pattern_name . '.html')) {
+    global $cur_variables;
+    $cur_variables = array_merge($cur_variables, $variables);
+}
+
+function get_variable($key)
+{
+    global $cur_variables;
+    return isset($cur_variables[$key]) ? $cur_variables[$key] : null;
+}
+
+function render_template($pattern_name, array $set_variables = [])
+{
+    return _render_template($pattern_name, $set_variables);
+}
+
+function render_inline_template($content, array $set_variables = [])
+{
+    return _render_template($content, $set_variables, true);
+}
+
+function _render_template($pattern_name_or_content, array $set_variables = [], $is_inline = false)
+{
+    global $root, $module_settings, $module_all_settings, $core_pattern, $is_root_template, $g_pattern_i, $cur_variables;
+    set_variables($set_variables);
+    $out = "";
+    $save_g_pattern_i = $g_pattern_i;
+    $pattern_cache_name = !$is_inline ? str_replace("/", "_", $pattern_name_or_content) : "inline_" . crc32($pattern_name_or_content);
+    if(!file_exists($root . '.cache/page_patterns/' . $pattern_cache_name) or (!$is_inline && filemtime($root . '.cache/page_patterns/' . $pattern_cache_name) < filemtime($root . 'modules/' . $pattern_name_or_content . '.html'))) {
         ini_set('pcre.backtrack_limit', '52428800');//50 mb
         $core_pattern_tmp = array();
-        $text = $is_root_template ? $core_pattern['main'] : open_txt_file($root . 'modules/' . $pattern_name, 'html');
+        $text = $is_root_template ? $core_pattern['main'] : (!$is_inline ? open_txt_file($root . 'modules/' . $pattern_name_or_content, 'html') : $pattern_name_or_content);
         if($is_root_template)
             $text .= "#include_modules(authorization,cache_img,head_manager)";
-        $matches = preg_split('/(#include_modules\\((.+?)\\)|[^#]{{(.+?)}})/uim', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $matches = preg_split('/(#include_modules\\(([\\s\\S]+?)\\)|{{(.+?)}})/uim', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $pattern = array();
         $core_pattern_tmp['pattern'] = null;
         $core_pattern_tmp['pattern_connectors'] = null;
@@ -21,30 +48,30 @@ function render_template($pattern_name, array $variables = [])
             if(!isset($matches[$i + 2]))
                 break;
             $is_module = utf8_strpos($matches[$i + 1], "#include_modules") !== false;
-            $tmp_mod_text = preg_replace('/ /ui', '', $matches[$i + 2]);
+            $tmp_mod_text = $matches[$i + 2];
             $tmp_mod_settings = null;
             if($is_module) {
-                preg_match_all('/(([^,]+)(\[([^[\]]+)\]))|([^,]+)/u', $tmp_mod_text, $settings_matches);
+                preg_match_all('/(([^,]+)(\\[([^[\\]]+)\\]))|([^,]+)/u', $tmp_mod_text, $settings_matches);
                 if(isset($settings_matches[4][0])) {
                     $tmp_mod_settings = array();
                     for ($i3 = 0; $i3 < count($settings_matches[4]); $i3++) {
                         $tmp = $settings_matches[4][$i3];
-                        preg_match_all('/([^,]+?)=({.+?}|(\'.+?(?<!\\\)\')|(".+?(?<!\\\)")|\\d*)/u', $tmp, $settings_matches2);
+                        preg_match_all('/([^,]+?)=({[\\s\\S]+?}|(\'[\\s\\S]+?(?<!\\\)\')|("[\\s\\S]+?(?<!\\\)")|\\d*)/u', $tmp, $settings_matches2);
                         for ($i2 = 0; $i2 < count($settings_matches2[2]); $i2++) {
-                            preg_match("/^{.+}$/u", $settings_matches2[2][$i2], $res);
+                            $var_key = preg_replace("/[ \\r\\n]/u", "", $settings_matches2[1][$i2]);
+                            preg_match("/^{[\\s\\S]+}$/u", $settings_matches2[2][$i2], $res);
                             if(count($res) == 1) {
-                                preg_match_all("/[{,](('.+?(?<!\\\\)')|(\".+?(?<!\\\\)\")|\\d*)/u", $settings_matches2[2][$i2], $res);
+                                preg_match_all("/[{,](('[\\s\\S]+?(?<!\\\\)')|(\"[\\s\\S]+?(?<!\\\\)\")|\\d*)/u", $settings_matches2[2][$i2], $res);
                                 foreach ($res[1] as $val)
-                                    $tmp_mod_settings[$i3][$settings_matches2[1][$i2]][] = preg_replace(array('/^(\'|")(.*)(\'|")$/u', '/\\\\\'/u', '/\\\"/u'), array('$2', '\'', '"'), $val);
+                                    $tmp_mod_settings[$i3][$var_key][] = preg_replace(array('/^(\'|")([\\s\\S]*)(\'|")$/u', '/\\\\\'/u', '/\\\"/u'), array('$2', '\'', '"'), $val);
                             } else
-                                $tmp_mod_settings[$i3][$settings_matches2[1][$i2]] = preg_replace(array('/^(\'|")(.*)(\'|")$/u', '/\\\\\'/u', '/\\\"/u'), array('$2', '\'', '"'), $settings_matches2[2][$i2]);
+                                $tmp_mod_settings[$i3][$var_key] = preg_replace(array('/^(\'|")([\\s\\S]*)(\'|")$/u', '/\\\\\'/u', '/\\\"/u'), array('$2', '\'', '"'), $settings_matches2[2][$i2]);
                         }
                         if(count($settings_matches2[2]) == 0)
                             $tmp_mod_settings[$i3] = null;
                     }
                 }
             }
-
 
             $core_pattern_tmp['pattern_settings'][] = $tmp_mod_settings;
             $tmp_mod_text = preg_replace('/\[[^[\]]+\]/ui', '', $tmp_mod_text);
@@ -89,9 +116,8 @@ function render_template($pattern_name, array $variables = [])
 
     $pattern_i = 0;
     while (isset($pattern_connectors[$pattern_i])) {
-        if(isset($pattern_c[$pattern_i])) {
-            append($pattern_c[$pattern_i]);
-        }
+        if(isset($pattern_c[$pattern_i]))
+            $out .= $pattern_c[$pattern_i];
         if(isset($p_connector_types[$pattern_i])) {
             $p_connector_type = $p_connector_types[$pattern_i];
             $pattern_connectors_len = count($pattern_connectors[$pattern_i]);
@@ -99,30 +125,22 @@ function render_template($pattern_name, array $variables = [])
                 $connector_name = $pattern_connectors[$pattern_i][$pattern_connectors_i];
                 switch ($p_connector_type) {
                     case "module":
-                        $exec_class = new $connector_name();
+                        $g_pattern_i = $pattern_i;
+                        $out .= $connector_name::main();
                         unset($exec_class);
                         break;
                     case "variable":
-                        append($variables[$connector_name]);
+                        $out .= isset($cur_variables[$connector_name]) ? $cur_variables[$connector_name] : "";
                         break;
                 }
             }
         }
         $pattern_i++;
     }
+    $g_pattern_i = $save_g_pattern_i;
+    return $out;
 }
 
-function append($html)
-{
-    global $cms_result;
-    $cms_result['main'] .= $html;
-}
-
-function ref($val)
-{
-    $ref = &$val;
-    return $ref;
-}
 
 function is_os_windows()
 {
@@ -154,54 +172,6 @@ function header_403()
 function header_404()
 {
     header("HTTP/1.0 404 Not Found");
-}
-
-function is_authorized()
-{
-    if(is_background_job())
-        return true;
-    global $vers;
-    if(isset($_SESSION['user_id']) and isset($_SESSION['ver']) and $_SESSION['ver'] == $vers)
-        return true;
-    else
-        return false;
-}
-
-function user_is_role($role)
-{
-    if(is_background_job())
-        return true;
-    if(is_authorized() and $_SESSION["role"] == $role)
-        return true;
-    else
-        return false;
-}
-
-function is_admin()
-{
-    if(is_background_job())
-        return true;
-    return user_is_role(authorization_api::$roles['admin']);
-}
-
-function is_moderator()
-{
-    if(is_background_job())
-        return true;
-    return user_is_role(authorization_api::$roles['moderator']);
-}
-
-function is_user()
-{
-    if(is_background_job())
-        return true;
-    return user_is_role(authorization_api::$roles['user']);
-}
-
-function check_admin()
-{
-    if(!is_admin())
-        error_alert_not_log('Недостаточно прав');
 }
 
 function print_r_($arr)
@@ -245,7 +215,6 @@ function u_rand_key_generate()
 {
     return strtolower(md5(uniqid(generate(50)))) . generate(50);
 }
-
 
 function check_email_format($email)
 {
@@ -450,7 +419,6 @@ function characters_unescape($variable)
     return $variable;
 }
 
-$xss_filtered_arr = [];
 /**
  * Не фильтрует атаки в css
  * @param string $variable
@@ -523,9 +491,9 @@ function get_name_back_class($depth = 0)
 {
     $callers = debug_backtrace();
     $count = count($callers);
-    for ($i = 0; $i < $callers; $i++)
-        if(isset($callers[$i]['class']) and $callers[$i]['type'] == "->" && utf8_strpos($callers[$i]['class'], "\\") === false)
-            return ($i + $depth < $count) ? $callers[$i + $depth]['class'] : null;
+    for ($i = 0; $i < $count; $i++)
+        if(isset($callers[$i]['class']) and in_array($callers[$i]['type'], ["->", "::"]) && isset($callers[$i]['class']) && utf8_strpos($callers[$i]['class'], "\\") === false)
+            return ($i + $depth < $count && isset($callers[$i + $depth]['class'])) ? $callers[$i + $depth]['class'] : null;
     return null;
 }
 
@@ -671,10 +639,9 @@ function ch_p_u($href)
     return $res;
 }
 
-
 function alert($mes)
 {
-    append('<script type="text/javascript">alert("' . $mes . '")</script>');
+    return '<script type="text/javascript">alert("' . $mes . '")</script>';
 }
 
 function error_alert_not_log($mes)
@@ -705,7 +672,7 @@ function replace_param_in_query_string($query_string, $param, $new_value)
  */
 function get_settings($key = null, $module_name = "current")
 {
-    global $pattern_i, $module_all_settings, $module_settings, $global_settings;
+    global $g_pattern_i, $module_all_settings, $module_settings, $global_settings;
     if(is_null($module_name)) $module_name = "current";
     switch ($module_name) {
         case'global':
@@ -716,7 +683,7 @@ function get_settings($key = null, $module_name = "current")
         case 'current':
             $module_name = get_current_module_name();
         default:
-            $settings = isset($module_all_settings[$pattern_i][$module_name]) ? $module_all_settings[$pattern_i][$module_name] : null;
+            $settings = isset($module_all_settings[$g_pattern_i][$module_name]) ? $module_all_settings[$g_pattern_i][$module_name] : null;
             if(is_null($settings))
                 $settings = isset($module_settings[$module_name]) ? $module_settings[$module_name] : null;
             if(is_null($key))
@@ -726,9 +693,9 @@ function get_settings($key = null, $module_name = "current")
     }
 }
 
-function get_current_module_name()
+function get_current_module_name($depth = 0)
 {
-    $current_module_name = get_name_back_class();
+    $current_module_name = get_name_back_class($depth);
     //    if (substr($current_module_name, 0, 5) == "")
     //        $current_module_name = get_name_back_class(4);
     //    if(is_null($current_module_name))
@@ -745,7 +712,6 @@ function get_current_module_name()
 
     return $current_module_name;
 }
-
 
 function get_http_host_name()
 {
@@ -887,18 +853,17 @@ function function_router($class_obj, $f_name, $args_xss_filter_disabled = [])
             else
                 throw new InvalidArgumentException("Missing argument $p_name for " . get_class($class_obj) . "::$f_name()");
         }
-
-        call_user_func_array(array($class_obj, $f_name), $args);
+        return call_user_func_array(array($class_obj, $f_name), $args);
     } catch (Throwable | Exception $e) {
         $trace = $e->getTrace();
-        if($trace[0]['function'] == "request_function" || $trace[1]['function'] == "request_function" || ($trace[0]['function'] == "{closure}" && $trace[2]['function'] == "request_function")) {
+        if($trace[0]['function'] == "function_router" || $trace[1]['function'] == "function_router" || ($trace[0]['function'] == "{closure}" && $trace[2]['function'] == "function_router")) {
             header_403();
-            exit('request_function error: ' . $e->getMessage() . "\n");
+            exit('function_router error: ' . $e->getMessage() . "\n");
         } else {
             $trace_str = "";
             $trace = array_reverse($trace);
             foreach ($trace as $key => $value) {
-                $trace_str .= $value['file'] . ":" . $value['line'] . " ";
+                $trace_str .= (isset($value['file']) ? $value['file'] : "") . ":" . (isset($value['line']) ? $value['line'] : "") . " ";
                 if(isset($value['class']))
                     $trace_str .= $value['class'] . $value['type'];
                 if(isset($value['function']))

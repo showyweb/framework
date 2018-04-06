@@ -2,6 +2,7 @@
 
 class files
 {
+    private const depth = 1;
     static private function filter_($name)
     {
         $name = str_replace("..", "", $name);
@@ -17,7 +18,7 @@ class files
         $folder = static::filter_($folder);
         $zip_name = static::filter_($zip_name);
         $zip_name = str_replace(".zip", "", $zip_name) . ".zip";
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = "/upload/" . $class_name . "/";
         $uploads_dir = $root . $web_url;
@@ -61,7 +62,7 @@ class files
             error("Не все параметры функции заполнены");
         $destination = static::filter_($destination);
         $zip_filename = static::filter_($zip_filename);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = "/upload/" . $class_name . "/";
         $uploads_dir = $root . $web_url;
@@ -84,7 +85,7 @@ class files
             return false;
         if($upl_sub_dir != null)
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = "/upload/" . $class_name . "/" . (($upl_sub_dir == null) ? "" : $upl_sub_dir . "/");
         $uploads_dir = $root . $web_url;
@@ -129,7 +130,7 @@ class files
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
         if($random_upl_sub_dir)
             $upl_sub_dir = u_rand_key_generate();
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         //       if($_FILES[$name_val]["error"] !== 4)
         //           return null;
         if($_FILES[$name_val]["error"] !== 0)
@@ -184,7 +185,7 @@ class files
         if($upl_sub_dir != null)
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
 
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = "/upload/" . $class_name . "/" . (($upl_sub_dir == null) ? "" : $upl_sub_dir . "/");
         $uploads_dir = $root . $web_url;
@@ -199,7 +200,7 @@ class files
         if($upl_sub_dir != null)
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
 
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = "/upload/" . $class_name . "/" . (($upl_sub_dir == null) ? "" : $upl_sub_dir . "/");
         $uploads_dir = $root . $web_url;
@@ -214,7 +215,7 @@ class files
         if($upl_sub_dir != null)
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
 
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $root = getcwd();
         $web_url = (!$in_upload_dir ? "/modules/" : "/upload/") . $class_name . "/" . (($upl_sub_dir == null) ? "" : $upl_sub_dir . "/");
         $uploads_dir = $root . $web_url;
@@ -228,7 +229,7 @@ class files
         $filename = str_replace("\\", "", $filename);
         if($upl_sub_dir != null)
             $upl_sub_dir = str_replace("..", "", $upl_sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $web_url = "upload/" . $class_name . "/" . (($upl_sub_dir == null) ? "" : $upl_sub_dir . "/") . $filename;
         if(!$check_exist || file_exists(getcwd() . '/' . $web_url))
             return '/' . $web_url;
@@ -244,7 +245,7 @@ class files
             $sub_dir = str_replace("..", "", $sub_dir);
         if($new_sub_dir != null)
             $new_sub_dir = str_replace("..", "", $new_sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $path = getcwd() . "/upload/" . $class_name . "/" . (($sub_dir == null) ? "" : $sub_dir . "/");
         $new_path = getcwd() . "/upload/" . $class_name . "/" . (($new_sub_dir == null) ? "" : $new_sub_dir . "/");
         if(!file_exists($new_path) and !mkdir($new_path, 0777, true))
@@ -262,7 +263,7 @@ class files
         $newfilename = str_replace("\\", "", $newfilename);
         if($sub_dir != null)
             $sub_dir = str_replace("..", "", $sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $path = getcwd() . "/upload/" . $class_name . "/" . (($sub_dir == null) ? "" : $sub_dir . "/");
         if(!rename($path . $filename, $path . $newfilename))
             error("error_rename_file");
@@ -281,7 +282,7 @@ class files
                 $sub_dir = str_replace("..", "", $sub_dir);
             if($new_sub_dir != null)
                 $new_sub_dir = str_replace("..", "", $new_sub_dir);
-            $class_name = get_current_module_name();
+            $class_name = get_current_module_name(static::depth);
             $path = getcwd() . "/upload/" . $class_name . "/" . (($sub_dir == null) ? "" : $sub_dir . "/");
             $new_path = getcwd() . "/upload/" . $class_name . "/" . (($new_sub_dir == null) ? "" : $new_sub_dir . "/");
             if(!file_exists($new_path) and !mkdir($new_path, 0777, true))
@@ -320,7 +321,7 @@ class files
         if($absolute_path)
             $path = getcwd() . "/" . $dir;
         else {
-            $class_name = get_current_module_name();
+            $class_name = get_current_module_name(static::depth);
             $dir = str_replace("..", "", $dir);
             $path = getcwd() . "/upload/" . $class_name . "/" . $dir;
         }
@@ -335,7 +336,7 @@ class files
         if($absolute_path)
             $path = getcwd() . "/" . $dir;
         else {
-            $class_name = get_current_module_name();
+            $class_name = get_current_module_name(static::depth);
             $dir = str_replace("..", "", $dir);
             $path = getcwd() . "/upload/" . $class_name . "/" . $dir;
         }
@@ -380,7 +381,7 @@ class files
         }
         if($sub_dir != null)
             $sub_dir = str_replace("..", "", $sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $path = getcwd() . "/upload/" . $class_name . "/" . (($sub_dir == null) ? "" : $sub_dir . "/");
         if($filename == null)
             return is_dir($path);
@@ -393,7 +394,7 @@ class files
         if($absolute_path)
             $path = getcwd() . "/" . $dir;
         else {
-            $class_name = get_current_module_name();
+            $class_name = get_current_module_name(static::depth);
             $dir = str_replace("..", "", $dir);
             $path = getcwd() . "/upload/" . $class_name . "/" . $dir;
         }
@@ -415,7 +416,7 @@ class files
         $filename = str_replace("\\", "", $filename);
         if($sub_dir != null)
             $sub_dir = str_replace("..", "", $sub_dir);
-        $class_name = get_current_module_name();
+        $class_name = get_current_module_name(static::depth);
         $path = getcwd() . "/upload/" . $class_name . "/" . (($sub_dir == null) ? "" : $sub_dir . "/");
         if(!unlink($path . $filename))
             error("error_remove_file");
@@ -426,9 +427,7 @@ class files
         if($sub_dir != null)
             $sub_dir = str_replace("..", "", $sub_dir);
         $list = array();
-        $class_name = get_current_module_name();
-        if($class_name == get_current_module_name(1))
-            $class_name = get_current_module_name(3);
+        $class_name = get_current_module_name(static::depth);
         $path = getcwd() . "/upload/" . $class_name . (($sub_dir == null) ? "" : "/" . $sub_dir);
         if(!is_dir($path))
             error("dir_not_found");

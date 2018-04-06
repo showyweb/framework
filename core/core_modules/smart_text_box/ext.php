@@ -4,7 +4,7 @@ class smart_text_box_ext extends smart_text_box_api
 {
     function show_text_box($name)
     {
-        $is_admin = is_admin();
+        $is_admin = authorization_api::is_admin();
         $name = xss_filter($name);
         $data = $this->get_box($name);
         if(compress_code(str_replace('<br>', '', $data)) == "")
@@ -23,7 +23,7 @@ class smart_text_box_ext extends smart_text_box_api
 
         $editor = get_settings( 'editor');
         $editor = is_null($editor) ? 'standard' : $editor;
-        append($this->prepare_box_html($data, $name, $editor, $multiline, $edit, $save_button));
+        return $this->prepare_box_html($data, $name, $editor, $multiline, $edit, $save_button);
     }
 
 

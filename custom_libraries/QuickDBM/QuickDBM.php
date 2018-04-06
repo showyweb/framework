@@ -1,7 +1,7 @@
 <?
 /**
  * Name:    SHOWYWeb QuickDBM
- * Version: 2.1.0
+ * Version: 2.4.0
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: MIT license. http://www.opensource.org/licenses/mit-license.php
@@ -720,7 +720,9 @@ class qdbm
             qdbm_ext_tools::error($link->error . " sql:" . $sql);
         $itog = $result->fetch_assoc();
 
-        if(!is_null($itog))
+        if(is_null($itog))
+            return false;
+        else
             static::$check_column_table_cache[$this->table][$name] = true;
         static::$cache_is_modified = true;
         return static::$check_column_table_cache[$this->table][$name];
@@ -1119,10 +1121,26 @@ class qdbm
         return true;
     }
 
+    function get_count(qdbm_where $where = null, $column_name = "id", $is_distinct = false, $magic_quotes = true)
+    {
+        $link = static::get_mysqli_link();
+        $magic_quotes = $magic_quotes ? '`' : '';
+        $column_name = $magic_quotes . $column_name . $magic_quotes;
+        $sql = "SELECT COUNT(" . ($is_distinct ? "DISTINCT " : "") . "$column_name) AS `_count` FROM `" . $this->table . "`";
+        if(!is_null($where) and !is_null($where->get()))
+            $sql .= "WHERE " . $where->get();
+        $result = $link->query($sql);
+        if($link->errno !== 0)
+            qdbm_ext_tools::error($link->error . " sql:" . $sql);
+
+        $val = $result->fetch_assoc();
+        return intval($val["_count"]);
+    }
+
     /**
      * @param array|null $args
      * @param qdbm_where|null $where
-     * @param string $order_by
+     * @param string|array $order_by
      * @param int $order_method
      * @param int $offset
      * @param int $limit
@@ -1130,10 +1148,11 @@ class qdbm
      * @param string|null $group_by
      * @param qdbm_left_join_on|null $join
      * @param int|null $group_id_for_join_filters
+     * @param bool $is_distinct
      * @return array|null
      * @throws exception
      */
-    function get_rows($args = null, qdbm_where $where = null, $order_by = '_order', $order_method = qdbm_order::asc, $offset = 0, $limit = 0, qdbm_select_conjunction $custom_select_conjunction = null, $group_by = null, qdbm_left_join_on $join = null, $group_id_for_join_filters = null)
+    function get_rows($args = null, qdbm_where $where = null, $order_by = '_order', $order_method = qdbm_order::asc, $offset = 0, $limit = 0, qdbm_select_conjunction $custom_select_conjunction = null, $group_by = null, qdbm_left_join_on $join = null, $group_id_for_join_filters = null, $is_distinct = false)
     {
         if(!is_null($args))
             extract($args);
@@ -1153,7 +1172,7 @@ class qdbm
         }
         $order_by = ($order_by == null) ? "_order" : $order_by;
         $order_method = ($order_method == null) ? qdbm_order::asc : $order_method;
-        $sql = "SELECT " . (is_null($custom_select_conjunction) ? '*' : $custom_select_conjunction->get()) . " FROM `" . $this->table . "` " . (is_null($join) ? '' : $join->get() . ' ') . ((is_null($where) || is_null($where->get())) ? "" : "WHERE " . $where->get()) . " " . (is_null($group_by) ? '' : "GROUP BY `$group_by` ");
+        $sql = "SELECT " . ($is_distinct ? "DISTINCT " : "") . (is_null($custom_select_conjunction) ? '*' : $custom_select_conjunction->get()) . " FROM `" . $this->table . "` " . (is_null($join) ? '' : $join->get() . ' ') . ((is_null($where) || is_null($where->get())) ? "" : "WHERE " . $where->get()) . " " . (is_null($group_by) ? '' : "GROUP BY $group_by ");
         if(!is_array($order_by))
             $order_by = [$order_by];
         $i = 0;
@@ -1164,10 +1183,10 @@ class qdbm
 
             switch ($order_method) {
                 case qdbm_order::asc:
-                    $sql .= $o_prefix . $this->table . ".`$value`";
+                    $sql .= $o_prefix . "$value";
                     break;
                 case qdbm_order::desc:
-                    $sql .= $o_prefix . $this->table . ".`$value` DESC";
+                    $sql .= $o_prefix . "$value DESC";
                     break;
                 case qdbm_order::rand:
                     $sql .= $o_prefix . "rand()";
@@ -1215,21 +1234,6 @@ class qdbm
         return array(intval($min), intval($max));
     }
 
-    function get_count(qdbm_where $where = null)
-    {
-        $link = static::get_mysqli_link();
-        if($this->get_nii() == 1)
-            return 0;
-        $sql = "SELECT COUNT(*) FROM `" . $this->table . "`";
-        if(!is_null($where) and !is_null($where->get()))
-            $sql .= "WHERE " . $where->get();
-        $result = $link->query($sql);
-        if($link->errno !== 0)
-            qdbm_ext_tools::error($link->error . " sql:" . $sql);
-
-        $val = $result->fetch_assoc();
-        return intval($val["COUNT(*)"]);
-    }
 
     function format_ids_in_table($id = "id")
     {
@@ -1281,6 +1285,12 @@ class qdbm
         static::$write_locked = false;
         static::$write_locked_arr = [];
         return true;
+    }
+
+    function close_connection()
+    {
+        $link = static::get_mysqli_link();
+        $link->close();
     }
 
     function move_order($from, $to)
@@ -1604,7 +1614,7 @@ class qdbm
     private function get_group_any_type($id)
     {
         $db = $this->get_gf_db();
-        $new_id = $db->get_nii();
+        $new_id = $db->get_nii(false);
         if($new_id == 1) {
             return null;
         }
@@ -1635,7 +1645,7 @@ class qdbm
     {
         $parent_id = intval($parent_id);
         $db = $this->get_gf_db();
-        $new_id = $db->get_nii();
+        $new_id = $db->get_nii(false);
         if($new_id == 1) {
             return null;
         }
@@ -1665,7 +1675,7 @@ class qdbm
     {
         $group_id = intval($group_id);
         $db = $this->get_gf_db();
-        $new_id = $db->get_nii();
+        $new_id = $db->get_nii(false);
         if($new_id == 1) {
             return null;
         }

@@ -49,7 +49,7 @@ class smart_text_box_api
         if(is_null($name)) {
             error("name == null");
         }
-        if(!is_admin() && !$admin)
+        if(!authorization_api::is_admin() && !$admin)
             error_alert_not_log('Недостаточно прав');
         $db = $this->db;
         $id = $db->get_nii();
@@ -106,7 +106,7 @@ class smart_text_box_api
     {
         if(is_null($name))
             error("name == null");
-        if(!is_admin() and !$admin)
+        if(!authorization_api::is_admin() and !$admin)
             error_alert_not_log('Недостаточно прав');
         ini_set('pcre.backtrack_limit', '52428800');//50 mb
         $db = $this->db;
@@ -183,7 +183,7 @@ class smart_text_box_api
     {
         if(is_null($name))
             error("name == null");
-        if(!is_admin() and !$admin)
+        if(!authorization_api::is_admin() and !$admin)
             error_alert_not_log('Недостаточно прав');
         $images_info = '';
         $db = $this->db;
@@ -271,7 +271,7 @@ class smart_text_box_api
 
     function remove_box($name, $admin = false)
     {
-        if(!is_admin() && !$admin)
+        if(!authorization_api::is_admin() && !$admin)
             error_alert_not_log('Недостаточно прав');
         $db = $this->db;
         $result = $db->get_rows(null, (new qdbm_where())->equally('name', $name));

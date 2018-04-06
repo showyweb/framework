@@ -1,7 +1,7 @@
 <?php
 /**
  * Name:    SHOWYWeb Framework
- * Version: 4.0.0
+ * Version: 5.0.1
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) https://creativecommons.org/licenses/by-sa/4.0/
@@ -104,7 +104,7 @@ if($start_template != "") {
     $pattern_name = "_empty_";
 }
 
-if($pattern_name !== "_empty_") {
+if($pattern_name !== "_empty_" || is_background_job()) {
     if(!is_dir($root . '.cache'))
         mkdir($root . '.cache', 0777, true);
     if(!is_dir($root . '.cache/page_patterns'))
@@ -199,94 +199,92 @@ if($pattern_name !== "_empty_") {
         unset($module_as_arr);
     }
 
-
-    $pattern_cache_filename = 'global_template_zones' . "_" . str_replace("/", "_", $pattern_name);
-    if(!file_exists($root . '.cache/page_patterns/' . $pattern_cache_filename) or filemtime($root . '.cache/page_patterns/' . $pattern_cache_filename) < filemtime($root . 'modules/' . $pattern_name . '.html')) {
-        ini_set('pcre.backtrack_limit', '52428800');//50 mb
-        $core_pattern_tmp = [
-            'css_urls' => [],
-            'js_urls' => []
-        ];
-        $text = open_txt_file($root . 'modules/' . $pattern_name, 'html');
-        if(preg_match_all("/<!-- *#section_start\\((.*?)\\) *-->([\n\r ]*)?([\\s\\S]*?)([\n\r ]*)?<!-- *#section_end *-->/ui", $text, $matches)) {
-            files::remove_dir('.cache/page_patterns/', true);
-            mkdir($root . '.cache/page_patterns', 0777, true);
-            mkdir($root . '.cache/page_patterns/section', 0777, true);
-            $len_sub_patterns = count($matches[1]);
-            for ($sub_pattern_i = 0; $sub_pattern_i < $len_sub_patterns; $sub_pattern_i++) {
-                $sub_pattern_name = $matches[1][$sub_pattern_i];
-                $sub_pattern_text = $matches[3][$sub_pattern_i];
-                $text = preg_replace("/<!-- *#section_start\\($sub_pattern_name\\) *-->([\n\r ]*)?([\\s\\S]*?)([\n\r ]*)?<!-- *#section_end *-->/ui", "<!-- #include_section($sub_pattern_name) -->", $text);
-                save_to_text_file($root . '.cache/page_patterns/section' . $sub_pattern_name, $sub_pattern_text, 'html');
-            }
-        }
-
-        if(preg_match_all('/<!-- *?#include_section\((.+?)\) *?-->/ui', $text, $matches)) {
-            $reg_exp_tmp_arr = preg_replace('/(\/|\.|\*|\?|\=|\(|\)|\[|\]|\'|")/Uui', '\\\$1', $matches[0]);
-            $len_sub_patterns = count($reg_exp_tmp_arr);
-            for ($sub_pattern_i = 0; $sub_pattern_i < $len_sub_patterns; $sub_pattern_i++) {
-                $reg_exp_tmp = $reg_exp_tmp_arr[$sub_pattern_i];
-                $text = preg_replace('/' . $reg_exp_tmp . '/ui', open_txt_file($root . '.cache/page_patterns/section/' . $matches[1][$sub_pattern_i], 'html'), $text);
-            }
-        }
-
-
-        $text = preg_replace_callback("/^(.|\\r|\\n)*?<\\/head>/ui", function ($matches) use (&$core_pattern_tmp, &$global_settings) {
-            $head_text = $matches[0];
-            $head_text = preg_replace("/<title>.*<\\/title>\r?\n?.*?</uim", "<", $head_text, 1);
-            $regexp = '/([\n\r ]*)?<link.*?rel="stylesheet".*?href=("|\')([^?\r\n\'"]+)("|\').*?>([\n\r ]*)?/uim';
-            preg_match_all($regexp, $head_text, $matches);
-            $save_css_url_arr = $matches[3];
-            $save_url_arr_len = count($save_css_url_arr);
-            if($save_url_arr_len != 0) {
-                $head_text = preg_replace($regexp, "$1", $head_text);
-                $core_pattern_tmp['css_urls'] = $save_css_url_arr;
+    if($pattern_name !== "_empty_") {
+        $pattern_cache_filename = 'global_template_zones' . "_" . str_replace("/", "_", $pattern_name);
+        if(!file_exists($root . '.cache/page_patterns/' . $pattern_cache_filename) or filemtime($root . '.cache/page_patterns/' . $pattern_cache_filename) < filemtime($root . 'modules/' . $pattern_name . '.html')) {
+            ini_set('pcre.backtrack_limit', '52428800');//50 mb
+            ini_set('pcre.jit', '0');//
+            $core_pattern_tmp = [
+                'css_urls' => [],
+                'js_urls' => []
+            ];
+            $text = open_txt_file($root . 'modules/' . $pattern_name, 'html');
+            if(preg_match_all("/<!-- *#section_start\\((.*?)\\) *-->([\n\r ]*)?([\\s\\S]*?)([\n\r ]*)?<!-- *#section_end *-->/ui", $text, $matches)) {
+                files::remove_dir('.cache/page_patterns/', true);
+                mkdir($root . '.cache/page_patterns', 0777, true);
+                mkdir($root . '.cache/page_patterns/section', 0777, true);
+                $len_sub_patterns = count($matches[1]);
+                for ($sub_pattern_i = 0; $sub_pattern_i < $len_sub_patterns; $sub_pattern_i++) {
+                    $sub_pattern_name = $matches[1][$sub_pattern_i];
+                    $sub_pattern_text = $matches[3][$sub_pattern_i];
+                    $text = preg_replace("/<!-- *#section_start\\($sub_pattern_name\\) *-->([\n\r ]*)?([\\s\\S]*?)([\n\r ]*)?<!-- *#section_end *-->/ui", "<!-- #include_section($sub_pattern_name) -->", $text);
+                    save_to_text_file($root . '.cache/page_patterns/section' . $sub_pattern_name, $sub_pattern_text, 'html');
+                }
             }
 
-            $regexp = '/([\n\r ]*)?<script.*?src=("|\')([^\r\n\'"]+?)("|\').*?>.*?<\/script>([\n\r ]*)?/ui';
-            preg_match_all($regexp, $head_text, $matches);
-            $save_js_url_arr = $matches[3];
-            $save_url_arr_len = count($save_js_url_arr);
-            if($save_url_arr_len != 0) {
-                $head_text = preg_replace($regexp, "", $head_text);
-                $core_pattern_tmp['js_urls'] = $save_js_url_arr;
+            if(preg_match_all('/<!-- *?#include_section\((.+?)\) *?-->/ui', $text, $matches)) {
+                $reg_exp_tmp_arr = preg_replace('/(\/|\.|\*|\?|\=|\(|\)|\[|\]|\'|")/Uui', '\\\$1', $matches[0]);
+                $len_sub_patterns = count($reg_exp_tmp_arr);
+                for ($sub_pattern_i = 0; $sub_pattern_i < $len_sub_patterns; $sub_pattern_i++) {
+                    $reg_exp_tmp = $reg_exp_tmp_arr[$sub_pattern_i];
+                    $text = preg_replace('/' . $reg_exp_tmp . '/ui', open_txt_file($root . '.cache/page_patterns/section/' . $matches[1][$sub_pattern_i], 'html'), $text);
+                }
             }
-            $head_text = preg_replace("/<\\/head>$/ui", "", $head_text);
-            $core_pattern_tmp['head'] = $head_text;
-            return "</head>";
-        }, $text);
-        if(is_null($text)) {
-            echo preg_errtxt(preg_last_error());
-            exit();
+
+
+            $text = preg_replace_callback("/^(.|\\r|\\n)*?<\\/head>/ui", function ($matches) use (&$core_pattern_tmp, &$global_settings) {
+                $head_text = $matches[0];
+                $head_text = preg_replace("/<title>.*<\\/title>\r?\n?.*?</uim", "<", $head_text, 1);
+                $regexp = '/([\n\r ]*)?<link.*?rel="stylesheet".*?href=("|\')([^?\r\n\'"]+)("|\').*?>([\n\r ]*)?/uim';
+                preg_match_all($regexp, $head_text, $matches);
+                $save_css_url_arr = $matches[3];
+                $save_url_arr_len = count($save_css_url_arr);
+                if($save_url_arr_len != 0) {
+                    $head_text = preg_replace($regexp, "$1", $head_text);
+                    $core_pattern_tmp['css_urls'] = $save_css_url_arr;
+                }
+
+                $regexp = '/([\n\r ]*)?<script.*?src=("|\')([^\r\n\'"]+?)("|\').*?>.*?<\/script>([\n\r ]*)?/ui';
+                preg_match_all($regexp, $head_text, $matches);
+                $save_js_url_arr = $matches[3];
+                $save_url_arr_len = count($save_js_url_arr);
+                if($save_url_arr_len != 0) {
+                    $head_text = preg_replace($regexp, "", $head_text);
+                    $core_pattern_tmp['js_urls'] = $save_js_url_arr;
+                }
+                $head_text = preg_replace("/<\\/head>$/ui", "", $head_text);
+                $core_pattern_tmp['head'] = $head_text;
+                return "</head>";
+            }, $text);
+            if(is_null($text)) {
+                throw new Exception(preg_errtxt(preg_last_error()));
+            }
+            $text = preg_replace_callback("/<\\/body>(.|\\r|\\n)*$/ui", function ($matches) use (&$core_pattern_tmp) {
+                $core_pattern_tmp['footer'] = $matches[0];
+                return "";
+            }, $text);
+            if(is_null($text)) {
+                throw new Exception(preg_errtxt(preg_last_error()));
+            }
+            $core_pattern_tmp['main'] = $text;
+            $pattern_text_file = serialize($core_pattern_tmp);
+            save_to_text_file($root . '.cache/page_patterns/' . $pattern_cache_filename, $pattern_text_file, null);
+            unset($pattern_text_file, $core_pattern_tmp);
         }
-        $text = preg_replace_callback("/<\\/body>(.|\\r|\\n)*$/ui", function ($matches) use (&$core_pattern_tmp) {
-            $core_pattern_tmp['footer'] = $matches[0];
-            return "";
-        }, $text);
-        if(is_null($text)) {
-            echo preg_errtxt(preg_last_error());
-            exit();
-        }
-        $core_pattern_tmp['main'] = $text;
-        $pattern_text_file = serialize($core_pattern_tmp);
-        save_to_text_file($root . '.cache/page_patterns/' . $pattern_cache_filename, $pattern_text_file, null);
-        unset($pattern_text_file, $core_pattern_tmp);
+        $core_pattern = unserialize(open_txt_file($root . '.cache/page_patterns/' . $pattern_cache_filename, null));
+        $global_settings['global_css'] = array_merge($global_settings['global_css'], $core_pattern['css_urls']);
+        $global_settings['global_js'] = array_merge($global_settings['global_js'], $core_pattern['js_urls']);
+        $cms_result['head'] = $core_pattern['head'];
+        $cms_result['footer'] = $core_pattern['footer'];
+        $cms_result['main'] = render_template($pattern_name);
     }
-    $core_pattern = unserialize(open_txt_file($root . '.cache/page_patterns/' . $pattern_cache_filename, null));
-    $global_settings['global_css'] = array_merge($global_settings['global_css'], $core_pattern['css_urls']);
-    $global_settings['global_js'] = array_merge($global_settings['global_js'], $core_pattern['js_urls']);
-    $cms_result['head'] = $core_pattern['head'];
-    $cms_result['footer'] = $core_pattern['footer'];
-    render_template($pattern_name);
 } elseif($ajax_modules !== '') {
     $core_ch_p_u = unserialize(open_txt_file($root . '.cache/ch_p_u', null));
     $ch_p_u_pattern = $core_ch_p_u["ch_p_u_pattern"];
     $ch_p_u_replacement = $core_ch_p_u["ch_p_u_replacement"];
     $am_arr = explode(',', preg_replace('/ /ui', '', $ajax_modules));
-    foreach ($am_arr as $module_name) {
-        $exec_class = new $module_name();
-        unset($exec_class);
-    }
+    foreach ($am_arr as $module_name)
+        echo $module_name::main();
 }
 
 

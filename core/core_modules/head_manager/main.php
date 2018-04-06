@@ -10,7 +10,7 @@ class head_manager
         'add_html' => ''
     ];
 
-    function __construct()
+   static function main()
     {
         global $global_settings, $root, $cms_result;
 
@@ -73,7 +73,7 @@ class head_manager
             $result['js'] = "";
         $t_r = getcwd();
         if(!preg_match("/^(http\\:\\/\\/|https\\:\\/\\/|\\/)/ui", $url) && !file_exists($t_r . $url)) {
-            $class_name = get_current_module_name();
+            $class_name = get_current_module_name(2);
             $t_url = "/core/core_modules/" . $class_name . "/" . $s_url;
             if(file_exists($t_r . $t_url))
                 $url = $t_url;

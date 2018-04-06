@@ -57,4 +57,4 @@ if(is_get('to_desktop')) {
     redirect("", get_referer());
 }
 
-$start_template = !is_mobile_device() ? "main/page" : "main/page_m";
+$start_template =  "test/main";

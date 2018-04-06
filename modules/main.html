@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    #include_modules(render_tpl[name='main/ext_head'])
+</head>
+<body>
+
+#include_modules(set_var[x='true'])
+
+#include_modules(if_var[
+var='x',
+ti_tpl='ok \'
+        <br> {{x}}',
+fi_tpl='no'
+])
+
+</body>
+</html>

@@ -16,13 +16,13 @@ function check(){
     if(get_http_host_name()=="localhost")
         $file_path = "X:\Projects\Web\htdocs\localhost.error.log";
     if(!file_exists($file_path)){
-        append("Файл " . $file_path . " не найден");
-        return;
+        return "Файл " . $file_path . " не найден";
+
     }
 
     if($save_file_time == filemtime($file_path)){
-        append("Ошибок нет");
-        return;
+        return "Ошибок нет";
+
     }
 
     $log_text = file($file_path);
@@ -46,17 +46,17 @@ function check(){
     $error_notifier_tmp['save_file_time'] = $save_file_time;
     if($error_found) {
         if(send_html_email("novojilov_pavel@mail.ru", "Обнаружена ошибка на сайте " . $_SERVER['SERVER_NAME'], $err_mes) != "ok"){
-            append("Ошибка отправки отчета об ошибках");
-            return;
+            return "Ошибка отправки отчета об ошибках";
+
         }
 
     } else {
         save_to_text_file($error_notifier_path, serialize($error_notifier_tmp), null);
-        append("Ошибок нет");
-        return;
+       return "Ошибок нет";
+
     }
     save_to_text_file($error_notifier_path, serialize($error_notifier_tmp), null);
-    append("Отчет об ошибках отправлен");
-    return;
+    return "Отчет об ошибках отправлен";
+
 }
 }

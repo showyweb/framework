@@ -27,6 +27,11 @@ class anti_spam
     private $db_ip = null;
     public $db_ip_c = null;
 
+    static function main(){
+        new static();
+        return "";
+    }
+
     public function __construct()
     {
         $this->db_c = new anti_spam_db_c();

@@ -13,10 +13,10 @@ class authorization_ext extends authorization_api
 
     function new_user()
     {
-        return;//Отключено в целях безопасности. Нужно доработать
+        return "";//Отключено в целях безопасности. Нужно доработать
         $as_obj = $this->as_obj;
         $data_base64 = '<div class="login_form" style="display:none;">';
-        if(!is_admin() and $as_obj->is_captcha()) {
+        if(!static::is_admin() and $as_obj->is_captcha()) {
             $data_base64 .= '
     <form action="" method="post">' . anti_spam::get_captcha_html() . '
     <br/>
@@ -43,7 +43,7 @@ class authorization_ext extends authorization_api
             } else {
                 $as_obj->enable_captcha_on_client_ip();
                 $email = get_request('email');
-                $key = $this->new_key(is_admin(), $email);
+                $key = $this->new_key(static::is_admin(), $email);
                 $message = '<html><body>
 	<p>Для продолжения регистрации, нажмите <a href="http://' . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'] . '?authorization=key_validate&key=' . $key . '">эту ссылку</a></p>
 	 </body></html>';
@@ -59,15 +59,16 @@ class authorization_ext extends authorization_api
 
         $data_base64 .= '</div>';
         $data_base64 = base64_encode($data_base64);
-        append('<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>');
+        return '<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>';
     }
 
     function reg_new($once_reg = false, $key = null)
     {
+        $out = "";
         if($once_reg)
-            append("<script type='text/javascript'>
+            $out .= "<script type='text/javascript'>
 window.location.hash = '#login';
-</script>");
+</script>";
         $data_base64 = '<div class="login_form" style="display:none;">';
         $result = null;
         if(!$once_reg)
@@ -176,30 +177,33 @@ window.location.hash = '#login';
         }
         $data_base64 .= '</div>';
         $data_base64 = base64_encode($data_base64);
-        append('<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>');
+        $out .= '<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>';
+        return $out;
     }
 
 
     function notify_contacts_test($sms_phone, $email, $sms_ru_api_id = null, $sipnet_ru_id = null, $sipnet_ru_password = null)
     {
-        if(!is_admin()) {
-            append('Ошибка доступа');
-            return;
+        if(!static::is_admin()) {
+            return 'Ошибка доступа';
+
         }
         $message = '<html><body><p>Тест</p></body></html>';
         $send_html_email_result = send_html_email($email, 'Тестовое оповещение на сайте ' . $_SERVER['SERVER_NAME'], $message);
         $notify_site_title = get_settings('notify_site_title', 'global');
+        $out = "";
         if($sms_phone and $sipnet_ru_id and $sipnet_ru_password)
             notify::create_call_job("Здравствуйте! Вас приветствует автоматизированная система оповещений на сайте $notify_site_title . Хотим вам сообщить следующее: Тестовое голосовое оповещение", $sipnet_ru_id, $sipnet_ru_password, $sms_phone);
         if($send_html_email_result == 'ok') {
             if(!sms::send($sms_phone, 'Тестовое оповещение, подробности отправлены на ' . $email, $sms_ru_api_id)) {
-                append('Ошибка отправки сообщения на телефон :' . sms::get_last_error_mes());
+                $out .= 'Ошибка отправки сообщения на телефон :' . sms::get_last_error_mes();
             } else {
-                append('Сообщения отправлены, ждите получения');
+                $out .= 'Сообщения отправлены, ждите получения';
             }
         } else {
-            append('Ошибка отправки сообщения на почту :' . $send_html_email_result);
+            $out .= 'Ошибка отправки сообщения на почту :' . $send_html_email_result;
         }
+        return $out;
     }
 
     function authorization($login, $password, $vers)
@@ -246,25 +250,24 @@ window.location.hash = '#login';
         exit;
     }
 
-    function edit_password($login, $password, $new_password, $new_password_check)
+    function _edit_password($login, $password, $new_password, $new_password_check)
     {
-        if(!is_admin())
+        if(!static::is_admin())
             error('Ошибка доступа');
         $password = xss_filter($password);
         $new_password = xss_filter($new_password);
         $new_password_check = xss_filter($new_password_check);
         if(strlen($new_password) < 6) {
-            alert('Длина пароля должна быть не менее 6 символов.');
-            return;
+            return alert('Длина пароля должна быть не менее 6 символов.');
         }
         if($new_password != $new_password_check) {
-            alert('Пароли не совпадают.');
-            return;
+            return alert('Пароли не совпадают.');
         }
         $login = xss_filter($login);
 
         $db = $this->db;
         $result = $this->get_user($login, static::$roles['admin']);
+        $out = "";
         if($result != null) {
             $salt = $result['salt'];
             $text_to_check_password = substr($password, 0, 50);
@@ -278,7 +281,7 @@ window.location.hash = '#login';
                     'salt' => $salt
                 ];
                 $db->insert($rec, $newid);
-                alert('Пароль изменён');
+                $out .= alert('Пароль изменён');
                 $mes = "Пароль на сайте " . $_SERVER['SERVER_NAME'] . " был изменен";
                 sms::send($result['phone'], $mes, $result['sms_ru_api_id']);
                 //                if(database::check_db_name("exim_db")) {
@@ -288,10 +291,10 @@ window.location.hash = '#login';
                 //                    database::set_db_name($mysqli["db_name"]);
                 //                }
             } else
-                alert('Неправильный пароль');
+                $out .= alert('Неправильный пароль');
         } else
-            alert('Неизвестная ошибка');
-
+            $out .= alert('Неизвестная ошибка');
+        return $out;
     }
 
 
@@ -299,12 +302,12 @@ window.location.hash = '#login';
     {
         $as_obj = $this->as_obj;
         if(is_ajax())
-            return;
+            return "";
 
         $global_settings = get_settings(null, 'global');
         $data_base64 = '';
-
-        if(is_admin()) {
+        $out = "";
+        if(static::is_admin()) {
             $arr = $this->get_user($_SESSION['login']);
             $email = $arr['email'];
             $phone = $arr['phone'];
@@ -337,7 +340,8 @@ window.location.hash = '#login';
 
             $select_hs_gen = "<select name='call_hour_start'>$select_hs_gen</select>";
             $select_he_gen = "<select name='call_hour_end'>$select_he_gen</select>";
-            append('<script type="text/javascript">is_admin=true; var notify_len=' . $notify_len . ';</script>');
+
+            $out .= '<script type="text/javascript">is_admin=true; var notify_len=' . $notify_len . ';</script>';
             $data_base64 .= '
 <div class="password_edit" style="display: none; line-height: normal; font-size: initial;">
 <h3>Смена пароля</h3><form method="post" action="' . htmlspecialchars($_SERVER['REQUEST_URI'], ENT_NOQUOTES) . '">
@@ -447,7 +451,7 @@ window.location.hash = '#login';
             if(is_get('captcha_show') && $as_obj->get_attempts("login") > $global_settings['max_login_attempts'])
                 $data_base64 .= '<tr><td colspan="2">' . anti_spam::get_captcha_html() . '</td></tr>';
             $data_base64 .= '<tr>
-<td><input type="submit" value="ОК" /></td>
+<td colspan="2" style="text-align: center; padding-top: 8px;"><input type="submit" value="Войти" /></td>
 </tr></table>
 </form>
 </div>
@@ -455,6 +459,7 @@ window.location.hash = '#login';
         };
         $data_base64 = base64_encode($data_base64);
         if(!to_boolean(get_request('disable_login_data_html')))
-            append('<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>');
+            $out .= '<script type="text/javascript">sws_login_data = "' . $data_base64 . '"</script>';
+        return $out;
     }
 }
