@@ -1,6 +1,6 @@
 /**
  * Name:    SHOWYWEB SMART SLIDER JS
- * Version: 3.2.1
+ * Version: 3.2.2
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) https://creativecommons.org/licenses/by-nc-nd/4.0/
@@ -177,7 +177,14 @@ var showyweb_smart_slider = {
         }
 
         function touch_speed_controller(ev_) {
-            ev_['delta' + delta_n[slider_type]] = ev_['delta' + delta_n[slider_type]] / 100 * (100 / center.parent()[c_size_f_n[slider_type]](true) * scroll_elements.objs.eq((scroll_elements.objs.eq(scroll_elements.cur_index)[c_size_f_n[slider_type]](true) >= scroll_elements.objs.eq(scroll_elements.cur_index - 1)[c_size_f_n[slider_type]](true)) ? ((ev_['delta' + delta_n[slider_type]] > 0) ? (scroll_elements.cur_index - 1) : (scroll_elements.cur_index + 1)) : scroll_elements.cur_index)[c_size_f_n[slider_type]](true));
+            var next_i = -1;
+            if (scroll_elements.objs.eq(scroll_elements.cur_index)[c_size_f_n[slider_type]](true) >= scroll_elements.objs.eq(scroll_elements.cur_index - 1)[c_size_f_n[slider_type]](true))
+                next_i = (ev_['delta' + delta_n[slider_type]] > 0) ? (scroll_elements.cur_index - 1) : (scroll_elements.cur_index + 1);
+            else
+                next_i = scroll_elements.cur_index;
+            var parent_size = center.parent()[c_size_f_n[slider_type]](true);
+            var next_size = scroll_elements.objs.eq(next_i)[c_size_f_n[slider_type]](true);
+            ev_['delta' + delta_n[slider_type]] = ev_['delta' + delta_n[slider_type]] / 100 * (100 / parent_size * next_size);
             return ev_;
         }
 
@@ -417,7 +424,6 @@ var showyweb_smart_slider = {
             var scroll_pos_save = 0;
             center_touch_obj = center.touch({
                 touch_start: function (ev) {
-
                     var focused = $(':focus');
                     if (focused.is('textarea') || focused.is('input')) {
                         focused_ = true;
@@ -435,7 +441,6 @@ var showyweb_smart_slider = {
                         slider_obj.callback_touch_start(ev);
                 },
                 touch_move: function (ev) {
-                    // ev.preventDefault();
                     if (focused_)
                         return false;
                     if (!enable_status || !init_status)
@@ -443,26 +448,22 @@ var showyweb_smart_slider = {
                     center.stop_animate();
                     if (scroll_block)
                         ev.preventDefault();
-                    // else {
-                    //     if (slider_type == showyweb_smart_slider.SLIDER_TYPES.HORIZONTAL && (ev.direction & Hammer.DIRECTION_HORIZONTAL) && ((ev['velocity' + delta_n[slider_type]] > 0 && ev['velocity' + delta_n[slider_type]] > ev['velocity' + delta_n[showyweb_smart_slider.SLIDER_TYPES.VERTICAL]]) || (ev['velocity' + delta_n[slider_type]] < 0 && ev['velocity' + delta_n[slider_type]] < ev['velocity' + delta_n[showyweb_smart_slider.SLIDER_TYPES.VERTICAL]])))
-                    //         ev.preventDefault();
-                    //
-                    //     if (slider_type == showyweb_smart_slider.SLIDER_TYPES.VERTICAL && (ev.direction & Hammer.DIRECTION_VERTICAL) && ((ev['velocity' + delta_n[slider_type]] > 0 && ev['velocity' + delta_n[slider_type]] > ev['velocity' + delta_n[showyweb_smart_slider.SLIDER_TYPES.HORIZONTAL]]) || (ev['velocity' + delta_n[slider_type]] < 0 && ev['velocity' + delta_n[slider_type]] < ev['velocity' + delta_n[showyweb_smart_slider.SLIDER_TYPES.HORIZONTAL]])))
-                    //         ev.preventDefault();
-                    // }
                     if (!touch_move_start && slider_obj.callback_touch_move_start) {
                         touch_move_start = true;
                         slider_obj.callback_touch_move_start(ev);
                     }
-                    var save_delta = ev['delta' + delta_n[slider_type]];
+                    /* var save_delta = ev['delta' + delta_n[slider_type]];
+                     console.log('offset before ' + save_delta);
+                     if (save_delta < -50)
+                         debugger;*/
                     ev = touch_speed_controller(ev);
-
+                    // console.log('offset after ' + ev['delta' + delta_n[slider_type]]);
                     if (scroll_pos_save + ev['delta' + delta_n[slider_type]] > 0)
                         return false;
 
                     drag_status = true;
                     var css_properties = {};
-                    //console.log(scroll_pos_save+' _ ' + ev['delta' + delta_n[slider_type]]);
+                    // console.log(scroll_pos_save + ' _ ' + ev['delta' + delta_n[slider_type]]);
                     var generate_pos = function () {
                         return (scroll_pos_save + ev['delta' + delta_n[slider_type]]);
                     };

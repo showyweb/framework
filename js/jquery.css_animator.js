@@ -1,6 +1,6 @@
 /*
  * Name:    jQuery CSS Animator
- * Version: 2.0.2 (26.08.2016)
+ * Version: 2.0.3
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: MIT license. http://www.opensource.org/licenses/mit-license.php
@@ -74,7 +74,7 @@ var JgCssAnimator = {};
 
 
         var this_ = this;
-        if(duration_ms==0){
+        if(duration_ms===0){
             this_.css(css_properties_transform);
             if (callback_finish)
                 callback_finish.call(this_);
@@ -106,12 +106,12 @@ var JgCssAnimator = {};
                     setTimeout(function () {
                         work_col--;
                         setTimeout(function () {
-                            if (work_col == 0) {
+                            if (work_col === 0) {
                                 this_.css({'transition': ''});
                                 this_.removeAttr('jq_css_animator_is_working');
                                 //console.log('set none');
                             }
-                            else if (this_.attr('jq_css_animator_is_working') == 'true')
+                            else if (this_.attr('jq_css_animator_is_working') === 'true')
                                 setTimeout(arguments.callee, 1);
                         }, 1);
 
@@ -130,7 +130,7 @@ var JgCssAnimator = {};
         duration_ms = Math.round(duration_ms);
         ease = (ease == null) ? ease_.linear : ease;
         var this_ = this;
-        if (duration_ms == 0) {
+        if (duration_ms === 0) {
             this_.css(css_properties);
             if (callback_finish)
                 callback_finish.call(this_);
@@ -176,12 +176,12 @@ var JgCssAnimator = {};
                     setTimeout(function () {
                         work_col--;
                         setTimeout(function () {
-                            if (work_col == 0)
+                            if (work_col === 0)
                             {
                                 this_.css({'transition': ''});
                                 this_.removeAttr('jq_css_animator_is_working');
                             }
-                            else if (this_.attr('jq_css_animator_is_working') == 'true')
+                            else if (this_.attr('jq_css_animator_is_working') === 'true')
                                 setTimeout(arguments.callee, 1);
                         }, 1);
 

@@ -1,6 +1,6 @@
 /*
  * Name:    SHOWYWeb jQuery Touch
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru/
  * License: MIT license. http://www.opensource.org/licenses/mit-license.php
@@ -35,7 +35,7 @@ var swt_last_touchend_type = null;
 
         var ev_prepare = function (ev, startX, startY) {
             if (!ev.clientX) {
-                if (!ev.changedTouches[0])
+                if (!ev.changedTouches || !ev.changedTouches[0])
                     return null;
                 ev.clientX = ev.changedTouches[0].clientX;
                 ev.clientY = ev.changedTouches[0].clientY;
@@ -173,6 +173,8 @@ var swt_last_touchend_type = null;
                                 ev.velocityY = velocity.y;
                             }
                             else {
+                                if (!ev)
+                                    ev = {};
                                 ev.velocityX = 0;
                                 ev.velocityY = 0;
                             }

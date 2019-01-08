@@ -1,5 +1,4 @@
 $(function () {
-
     var iframe_video_size_update_filter = null;
     var iframe_video_size_update = function () {
         if (typeof SW_TE !== 'undefined')

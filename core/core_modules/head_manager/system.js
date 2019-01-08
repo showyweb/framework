@@ -1,3 +1,19 @@
+$.fn.serializeObject = function () {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function () {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
 function findHighestZIndex(jq_elem_level) {
     var elems = jq_elem_level ? jq_elem_level.parent().children("*") : $("*");
     var highest = 0;
@@ -160,6 +176,10 @@ jQuery(function ($) {
     };
 });
 
+function strip_tags(str) {
+    return str.replace(/<\/?[^>]+>/gi, '');
+}
+
 function preg_replace(patterns, replacements, text) {
     var len = patterns.length;
     if (len != replacements.length)
@@ -191,7 +211,7 @@ function get_ajax(module, query_object, callback_function, custom_alert) {
                 if (custom_alert)
                     smart_text_box.show_text_window("ERROR GET AJAX: " + data);
                 else
-                    alert("ERROR GET AJAX: " + data);
+                    console.error("ERROR GET AJAX: " + data);
                 callback_function(null);
                 return;
             }
@@ -212,7 +232,7 @@ function get_ajax_href(module, href, callback_function, custom_alert) {
                 if (custom_alert)
                     smart_text_box.show_text_window(data);
                 else
-                    alert("ERROR GET AJAX: " + data);
+                    console.error("ERROR GET AJAX: " + data);
                 callback_function(null);
                 return;
             }
@@ -226,12 +246,12 @@ function get_ajax_href(module, href, callback_function, custom_alert) {
                 smart_text_box.show_text_window("ERROR GET AJAX: <div style='white-space: pre-wrap; word-wrap:break-word;'>" + window.location.href + " " + $.toJSON(query_object) +
                     "</div><br>ERROR TEXT: " + error);
             else
-                alert("ERROR GET AJAX: " + data);
+                console.error("ERROR GET AJAX: " + data);
             callback_function(null);
         });
 }
 
-function post_ajax(module, query_object, callback_function, is_show_error_in_popup) {
+function post_ajax(module, query_object, callback_function, is_show_error_in_popup, error_callback) {
     query_object.ajax_module = module;
     var obj = $.post(window.location.href.replace(window.location.hash, ""), query_object,
         function (data) {
@@ -239,12 +259,17 @@ function post_ajax(module, query_object, callback_function, is_show_error_in_pop
                 return;
             var check = "<->ajax_complete<->";
             var check_result = data.substring(data.length - check.length);
-            if (check_result != check) {
+            if (check_result !== check) {
+                var er_mes = "ERROR POST AJAX: " + data;
                 if (is_show_error_in_popup)
                     smart_text_box.show_text_window(data);
-                else
-                    console.log("ERROR GET AJAX: " + data);
+                else {
+                    er_mes = strip_tags(er_mes);
+                    console.error(er_mes);
+                }
                 callback_function(null);
+                if (error_callback)
+                    error_callback(er_mes);
                 return;
             }
             data = data.substring(0, data.length - check.length);
@@ -254,12 +279,16 @@ function post_ajax(module, query_object, callback_function, is_show_error_in_pop
         .fail(function (xhr, status, error) {
             if (page_unloaded)
                 return;
+            var er_mes = "ERROR POST AJAX: <div style='white-space: pre-wrap; word-wrap:break-word;'>" + window.location.href + " " + $.toJSON(query_object) + "</div><br>ERROR TEXT: " + error;
             if (is_show_error_in_popup)
-                smart_text_box.show_text_window("ERROR GET AJAX: <div style='white-space: pre-wrap; word-wrap:break-word;'>" + window.location.href + " " + $.toJSON(query_object) +
-                    "</div><br>ERROR TEXT: " + error);
-            else
-                console.log("ERROR GET AJAX: " + error);
+                smart_text_box.show_text_window(er_mes);
+            else {
+                er_mes = strip_tags(er_mes);
+                console.error(er_mes);
+            }
             callback_function(null);
+            if (error_callback)
+                error_callback(er_mes);
         });
 }
 
@@ -291,7 +320,7 @@ function post_file(src, module, query_object, callback_function, custom_alert, n
                     if (custom_alert)
                         smart_text_box.show_text_window(data);
                     else
-                        alert("ERROR GET AJAX: " + data);
+                        console.error("ERROR GET AJAX: " + data);
                     callback_function(null);
                     return;
                 }
@@ -306,7 +335,7 @@ function post_file(src, module, query_object, callback_function, custom_alert, n
                     smart_text_box.show_text_window("ERROR GET AJAX: <div style='white-space: pre-wrap; word-wrap:break-word;'>" + window.location.href + " " + $.toJSON(query_object) +
                         "</div><br>ERROR TEXT: " + error);
                 else
-                    alert("ERROR GET AJAX: " + data);
+                    console.error("ERROR GET AJAX: " + data);
                 callback_function(null);
             }
         });

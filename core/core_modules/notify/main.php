@@ -1,13 +1,13 @@
 <?php
 
 
-class notify_db_c extends qdbm_schema
+class notify_db_c extends qdbm\schema
 {
     public $tab_name = "notify";
-    const title = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => false);
-    const href = array('type' => qdbm_type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const href_but_name = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => false);
-    const tag = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const title = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => false);
+    const href = array('type' => qdbm\type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const href_but_name = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => false);
+    const tag = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
 class notify
@@ -24,7 +24,7 @@ class notify
     public function __construct()
     {
         $this->db_s = new notify_db_c();
-        $this->db = new qdbm($this->db_s);
+        $this->db = new qdbm\db($this->db_s);
         return $this;
     }
 
@@ -84,7 +84,7 @@ class notify
     function get()
     {
         $db = $this->db;
-        $res = $db->get_rows(['order_method' => qdbm_order::desc]);
+        $res = $db->get_rows(new qdbm\select_q(['order_method' => qdbm\order::desc]));
         return $res;
     }
 
@@ -92,13 +92,13 @@ class notify
     {
         $id = intval($id);
         $db = $this->db;
-        $db->remove_rows((new qdbm_where())->equally('id', $id));
+        $db->remove_rows((new qdbm\where())->equally('id', $id));
     }
 
     function remove_by_tag($tag)
     {
         $db = $this->db;
-        $db->remove_rows((new qdbm_where())->equally('tag', $tag));
+        $db->remove_rows((new qdbm\where())->equally('tag', $tag));
 
     }
 
@@ -143,8 +143,7 @@ class notify
         }
 
         try {
-
-            $clientSecret = "80da7b392cfa4e4096a5e99023bf03bd";
+            $clientSecret = get_settings('microsofttranslator_client_secret');
             //Create the AccessTokenAuthentication object.
             $authObj = new AccessTokenAuthentication();
             //Get the Access token.
@@ -166,10 +165,10 @@ class notify
 
             save_to_text_file($tmp_path . $wav_file_name . ".wav", $strResponse, null);
             if(!is_os_windows()) {
-                exec("normalize-audio " . $tmp_path . $wav_file_name . ".wav");
-                if(!rename($tmp_path . $wav_file_name . ".wav", $save_path . $wav_file_name . ".wav"))
-                    error("error_move_file");
-                chmod($save_path . $wav_file_name . ".wav", 0777);
+                $wav_file = $tmp_path . $wav_file_name . ".wav";
+                $s_wav_file = $save_path . $wav_file_name . ".wav";
+                exec("ffmpeg -i '$wav_file' -f wav -flags bitexact -acodec pcm_s16le -ar 16000 -ac 1 '$s_wav_file'");
+                chmod($s_wav_file, 0777);
             }
         } catch (Throwable $e) {
             echo "Exception: " . $e->getMessage() . PHP_EOL;

@@ -1,28 +1,28 @@
 <?php
 
 
-class authorization_db_c extends qdbm_schema
+class authorization_db_c extends qdbm\schema
 {
     public $tab_name = "users";
-    const login = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const password = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const salt = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const role = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
-    const email = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const phone = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const sms_ru_api_id = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const sipnet_ru_id = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const sipnet_ru_password = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const call_hour_start = array('type' => qdbm_type_column::int, 'is_xss_filter' => true, 'is_add_index' => true);
-    const call_hour_end = array('type' => qdbm_type_column::int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const login = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const password = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const salt = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const role = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const email = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const phone = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const sms_ru_api_id = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const sipnet_ru_id = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const sipnet_ru_password = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const call_hour_start = array('type' => qdbm\type_column::int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const call_hour_end = array('type' => qdbm\type_column::int, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
-class a_registration_db_c extends qdbm_schema
+class a_registration_db_c extends qdbm\schema
 {
     public $tab_name = "registration";
-    const key = array('type' => qdbm_type_column::string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const role = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
-    const email = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const key = array('type' => qdbm\type_column::string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const role = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const email = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
 class authorization_api
@@ -41,7 +41,7 @@ class authorization_api
     public function __construct()
     {
         $this->db_c = new authorization_db_c();
-        $this->db = new qdbm($this->db_c);
+        $this->db = new qdbm\db($this->db_c);
         return $this;
     }
 
@@ -105,18 +105,18 @@ class authorization_api
     private function get_db_reg()
     {
         if(is_null($this->db_reg))
-            $this->db_reg = new qdbm(new a_registration_db_c());
+            $this->db_reg = new qdbm\db(new a_registration_db_c());
         return $this->db_reg;
     }
 
     function get_user($login, $f_role = null, $xss_filter = true)
     {
         $db = $this->db;
-        $where = (new qdbm_where())->equally('login', $login, true, null, $xss_filter);
+        $where = (new qdbm\where())->equally('login', $login, true, null, $xss_filter);
         $role = is_null($f_role) ? (isset($_SESSION['role']) ? $_SESSION['role'] : null) : $f_role;
         if(!is_null($role))
             $where->more_or_equally("role", $role);
-        $result = $db->get_rows(null, $where);
+        $result = $db->get_rows(new qdbm\select_q(null, $where));
         return is_null($result) ? null : $result[0];
     }
 
@@ -155,7 +155,8 @@ class authorization_api
             'login' => $new_login,
         ];
         $db->insert($rec, $res_login['id']);
-        $_SESSION['login'] = $new_login;
+        if($_SESSION['login'] === $login)
+            $_SESSION['login'] = $new_login;
     }
 
     function remove_user($login, $xss_filter = true)
@@ -164,7 +165,7 @@ class authorization_api
         $res = $this->get_user($login, static::$roles['admin'], $xss_filter);
         if(is_null($res))
             error("login $login not found");
-        $db->remove_rows((new qdbm_where())->equally('login', $login, true, null, $xss_filter));
+        $db->remove_rows((new qdbm\where())->equally('login', $login, true, null, $xss_filter));
     }
 
     //    function edit_role($login, $role)
@@ -172,7 +173,7 @@ class authorization_api
     //
     //    }
 
-    function edit_password($login, $password, $new_password)
+    function edit_password($login, $password, $new_password, $is_force = false)
     {
         $db = $this->db;
         $password = xss_filter($password);
@@ -185,7 +186,7 @@ class authorization_api
         $salt = $result['salt'];
         $text_to_check_password = substr($password, 0, 50);
         $password = md5(md5($text_to_check_password) . $salt);
-        if($result['password'] == $password || (static::is_admin() && $result['role'] != static::$roles['admin']) || (static::is_moderator() && $result['role'] == static::$roles['user'])) {
+        if($result['password'] == $password || $is_force || (static::is_admin() && $result['role'] != static::$roles['admin']) || (static::is_moderator() && $result['role'] == static::$roles['user'])) {
             $id = $result['id'];
             $salt = $this->GenerateSalt();
             $hashed_password = md5(md5($new_password) . $salt);
@@ -200,7 +201,7 @@ class authorization_api
             //            if(database::check_db_name("exim_db")) {
             //                database::set_db_name("exim_db");
             //                database::set_db_table("accounts");
-            //                database::insert_db('password', $new_password, null, null, (new qdbm_where())->equally('login', 'support'));
+            //                database::insert_db('password', $new_password, null, null, (new qdbm\qdbm_where())->equally('login', 'support'));
             //                database::set_db_name($mysqli["db_name"]);
             //            }
         } else
@@ -259,7 +260,7 @@ class authorization_api
     function get_key_inf($key)
     {
         $db = $this->get_db_reg();
-        return $db->get_rows(null, (new qdbm_where())->equally('key', $key));
+        return $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('key', $key)));
     }
 
     function keys_read()
@@ -271,7 +272,7 @@ class authorization_api
     function remove_key($key)
     {
         $db = $this->get_db_reg();
-        $db->remove_rows((new qdbm_where())->equally('key', $key));
+        $db->remove_rows((new qdbm\where())->equally('key', $key));
     }
 
     static function show_link_in_popup_menu($href, $href_but_name)

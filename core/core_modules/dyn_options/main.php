@@ -1,26 +1,15 @@
-# QuickDBM
-Поможет ускорить разработку при использовании БД MySQL. Таблицы генерируются автоматически, по мере необходимости.
-# Использование
-```php
 <?php
-require_once "QuickDBM.php";
-use qdbm\{db, schema, type_column, ext_tools as et, where, select_q, select_exp, left_join_on, order, filter_type};
-db::set_mysqli_auth([
-        'db_name' => '',
-        'host' => '',
-        'user' => '',
-        'password' => '',
-        'table_prefix' => ''
-    ]);//Настройка подключения к БД
 
-class dyn_options_db_c extends schema //В этом классе описывается структура одной из таблиц.
+use qdbm\{db, schema, type_column, ext_tools as et, where, select_q, select_exp, left_join_on, order, filter_type};
+
+class dyn_options_db_c extends schema
 {
     public $tab_name = "";
     const key = array('type' => type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
     const val = array('type' => type_column::string, 'is_xss_filter' => false, 'is_add_index' => true);
 }
 
-class dyn_options //Пример класса с использованием QuickDBM
+class dyn_options
 {
     private $db = null;
     public $db_c = null;
@@ -70,4 +59,3 @@ class dyn_options //Пример класса с использованием Qu
         $db->remove_rows($where);
     }
 }
-```

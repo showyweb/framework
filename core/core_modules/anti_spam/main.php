@@ -1,21 +1,20 @@
 <?php
 
 
-
-class anti_spam_db_c extends qdbm_schema
+class anti_spam_db_c extends qdbm\schema
 {
     public $tab_name = "anti_spam";
-    const count_reg = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
-    const empty_day = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const count_reg = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const empty_day = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
-class anti_spam_io_db_c extends qdbm_schema
+class anti_spam_io_db_c extends qdbm\schema
 {
     public $tab_name = "anti_spam_ip";
-    const prefix = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const attempts = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => false);
-    const empty_day = array('type' => qdbm_type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
-    const ip = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const prefix = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const attempts = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => false);
+    const empty_day = array('type' => qdbm\type_column::unsigned_int, 'is_xss_filter' => true, 'is_add_index' => true);
+    const ip = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
 class anti_spam
@@ -27,7 +26,8 @@ class anti_spam
     private $db_ip = null;
     public $db_ip_c = null;
 
-    static function main(){
+    static function main()
+    {
         new static();
         return "";
     }
@@ -35,13 +35,13 @@ class anti_spam
     public function __construct()
     {
         $this->db_c = new anti_spam_db_c();
-        $this->db = new qdbm($this->db_c);
+        $this->db = new qdbm\db($this->db_c);
         $this->db_ip_c = new anti_spam_io_db_c();
-        $this->db_ip = new qdbm($this->db_ip_c);
+        $this->db_ip = new qdbm\db($this->db_ip_c);
         return $this;
     }
 
-    private function is_proxy()
+    function is_proxy()
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if($socket < 0) {
@@ -68,7 +68,7 @@ class anti_spam
         $day_count = intval($res[0]['count_reg']);
         if($empty_day != $res[0]['empty_day']) {
             $day_count = 0;
-            $db->remove_rows((new qdbm_where())->equally($empty_day, $res[0]['empty_day']));
+            $db->remove_rows((new qdbm\where())->equally($empty_day, $res[0]['empty_day']));
         }
         return $day_count;
     }
@@ -102,14 +102,14 @@ class anti_spam
         $empty_day = strftime("%d", time());
         $res = null;
         if($newid != 1) {
-            $where = new qdbm_where();
+            $where = new qdbm\where();
             $where->equally('ip', $ip);
             $where->equally('empty_day', $empty_day);
-            $res = $db->get_rows([
+            $res = $db->get_rows(new qdbm\select_q([
                 'where' => $where,
                 'order_by' => 'id',
                 'limit' => 1
-            ]);
+            ]));
         }
         if($res != null)
             $newid = $res[0]["id"];
@@ -129,11 +129,11 @@ class anti_spam
         $ip = get_client_ip();
         $db = $this->db_ip;
         $empty_day = strftime("%d", time());
-        $where = new qdbm_where();
+        $where = new qdbm\where();
         $where->not_equally('empty_day', $empty_day);
         $db->remove_rows($where);
         $db->format_ids_in_table();
-        $where = new qdbm_where();
+        $where = new qdbm\where();
         $where->equally('ip', $ip);
         $where->equally('empty_day', $empty_day);
         $db->insert(
@@ -218,12 +218,12 @@ var elem = $('#grecaptcha_element')[0];
             return false;
         }
 
-        if($db->get_count((new qdbm_where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('captcha', 1)) != 0) {
+        if($db->get_count((new qdbm\where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('captcha', 1)) != 0) {
             static::$is_captcha = 2;
             return true;
         }
         if($this->is_max_count_reg() or $this->is_proxy()) {
-            if($db->get_count((new qdbm_where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('captcha', 0)) != 0) {
+            if($db->get_count((new qdbm\where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('captcha', 0)) != 0) {
                 static::$is_captcha = 1;
                 return false;
             } else {
@@ -237,7 +237,7 @@ var elem = $('#grecaptcha_element')[0];
 
     private static function get_attempts_where($ip, $empty_day, $prefix)
     {
-        return (new qdbm_where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('prefix', $prefix);
+        return (new qdbm\where())->equally('ip', $ip)->equally('empty_day', $empty_day)->equally('prefix', $prefix);
     }
 
     function attempts_plus($prefix, $ip = null)
@@ -249,10 +249,10 @@ var elem = $('#grecaptcha_element')[0];
         $newid = $db->get_nii();
         $res = null;
         if($newid != 1)
-            $res = $db->get_rows([
+            $res = $db->get_rows(new qdbm\select_q([
                 'where' => static::get_attempts_where($ip, $empty_day, $prefix),
                 'limit' => 1
-            ]);
+            ]));
         if(!is_null($res))
             $newid = $res[0]['id'];
         $attempts = 0;
@@ -266,7 +266,7 @@ var elem = $('#grecaptcha_element')[0];
             'attempts' => $attempts
         ];
         $db->insert($rec, $newid);
-        $where = new qdbm_where();
+        $where = new qdbm\where();
         $where->not_equally('empty_day', $empty_day);
 
         if($db->get_count($where) > 0) {
@@ -283,10 +283,10 @@ var elem = $('#grecaptcha_element')[0];
             $ip = get_client_ip();
         $empty_day = strftime("%d", time());
         $db = $this->db_ip;
-        $res = $db->get_rows([
+        $res = $db->get_rows(new qdbm\select_q([
             'where' => static::get_attempts_where($ip, $empty_day, $prefix),
             'limit' => 1
-        ]);
+        ]));
         $attempts = 0;
         if(!is_null($res))
             $attempts = intval($res[0]['attempts']);
@@ -302,10 +302,10 @@ var elem = $('#grecaptcha_element')[0];
         $newid = $db->get_nii();
         $res = null;
         if($newid != 1)
-            $res = $db->get_rows([
+            $res = $db->get_rows(new qdbm\select_q([
                 'where' => static::get_attempts_where($ip, $empty_day, $prefix),
                 'limit' => 1
-            ]);
+            ]));
         if($res != null)
             $newid = $res[0]['id'];
         $rec = [

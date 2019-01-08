@@ -1,13 +1,14 @@
 <?php
 /**
  * Name:    SHOWYWeb Framework
- * Version: 5.0.1
+ * Version:  7.1.0
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) https://creativecommons.org/licenses/by-sa/4.0/
  */
+
 mb_internal_encoding('UTF-8');
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
+error_reporting(E_ALL);
 $start1 = gettimeofday();
 header("Content-type: text/html; charset=utf-8");
 $root = getcwd() . "/";
@@ -78,7 +79,7 @@ require_once 'session_start.php';
 require_once "$root/settings.php";
 
 
-qdbm::set_mysqli_auth($global_settings['mysqli']);
+qdbm\db::set_mysqli_auth($global_settings['mysqli']);
 
 
 //**************************************************************************
@@ -90,8 +91,8 @@ if(is_ajax() or is_background_job()) {
 }
 //**************************************************************************
 if(is_get('once_reg')) {
-    $mysqli_link = qdbm::get_mysqli_link();
-    if(!($check_table = mysqli_query($mysqli_link, 'SELECT `id` FROM `users`LIMIT 1')) or !isset($check_table) or !mysqli_fetch_assoc($check_table)) {
+    $mysqli_link = qdbm\db::get_mysqli_link();
+    if(!($check_table = mysqli_query($mysqli_link, 'SELECT `id` FROM `users` WHERE role=1 LIMIT 1')) or !isset($check_table) or !mysqli_fetch_assoc($check_table)) {
         $global_settings["once_reg"] = true;
     } else
         exit("Администратор уже зарегистрирован!");

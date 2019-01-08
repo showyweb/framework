@@ -1,7 +1,7 @@
 /*
  * Name:    SHOWYWEB BROWSERS SCANNER JS
- * Version: 3.5.0
- * Author:  Novojilov Pavel Andreevich
+ * Version: 3.6.0
+ * Author:  Novojilov Pavel
  * Support: http://SHOWYWEB.ru/
  * License: MIT license. http://www.opensource.org/licenses/mit-license.php
  * Copyright (c) 2015 Pavel Novojilov;
@@ -17,9 +17,10 @@ var SW_BS = {
     m_firefox_min_browser_version: 29.0,
     webkit_min_browser_version: 532.9,
     chrome_min_browser_version: 7,
-    div_id_display_error: "error_css",
+    div_id_display_error: "is_error_version",
     mobile_error_message: "'Версия вашего интернет браузера ' + browser.name + ' устарела, в связи с этим возможно некорректное отображение текущей страницы сайта. Пожалуйста обновите браузер ' + browser.name + ' до последней версии.'",
     error_message: "'<h1>Версия вашего интернет браузера ' + browser.name + ' устарела, в связи с этим возможно некорректное отображение текущей страницы сайта. Пожалуйста обновите браузер ' + browser.name + ' до последней версии, сделать это можно пройдя по <a href=\"' + browser_get_link + '\"> этой ссылке</a></h1>'",
+    not_show_error_message: false,
     init: function () {
         var browser = {
             firefox: false,
@@ -208,14 +209,14 @@ var SW_BS = {
         if (window.location.search.indexOf('disable_browsers_scanner=1') != -1)
             return false;
         var div_id_display_error = this.div_id_display_error;
-        var error_css = false;
+        var is_error_version = false;
         var browser_get_link;
         var min_browser_version;
         if (browser.msie) {
             min_browser_version = this.msie_min_browser_version;
             if (browser.fullVersion < min_browser_version) {
                 browser_get_link = "http://windows.microsoft.com/ru-RU/internet-explorer/downloads/ie";
-                error_css = true;
+                is_error_version = true;
             }
         }
         if (browser.opera) {
@@ -226,7 +227,7 @@ var SW_BS = {
                 min_browser_version = this.opera_mini_min_browser_version;
             if (browser.fullVersion < min_browser_version) {
                 browser_get_link = "http://ru.opera.com/browser/";
-                error_css = true;
+                is_error_version = true;
             }
         }
 
@@ -236,7 +237,7 @@ var SW_BS = {
                 min_browser_version = this.m_firefox_min_browser_version;
             if (browser.fullVersion < min_browser_version) {
                 browser_get_link = "http://www.mozilla.com/ru/firefox/";
-                error_css = true;
+                is_error_version = true;
             }
         }
         else if (browser.chrome) {
@@ -244,14 +245,14 @@ var SW_BS = {
             min_browser_version = this.chrome_min_browser_version;
             if (browser.version < min_browser_version) {
                 browser_get_link = "http://www.google.com/chrome/";
-                error_css = true;
+                is_error_version = true;
             }
         }
         else if (browser.safari) {
             min_browser_version = this.webkit_min_browser_version;
             if (browser.fullVersion < min_browser_version) {
                 browser_get_link = "http://www.apple.com/ru/safari/";
-                error_css = true;
+                is_error_version = true;
             }
         }
         else if (browser.webkit && !browser.msedge) {
@@ -259,12 +260,12 @@ var SW_BS = {
             if (browser.fullVersion < min_browser_version) {
 
                 browser_get_link = "https://www.google.ru/?q=%D0%B1%D1%80%D0%B0%D1%83%D0%B7%D0%B5%D1%80%D1%8B%20%D0%BD%D0%B0%20webkit";
-                error_css = true;
+                is_error_version = true;
             }
         }
-        browser.error_css = false;
-        if (error_css) {
-            browser.error_css = true;
+        browser.is_error_version = false;
+        if (is_error_version && !not_show_error_message) {
+            browser.is_error_version = true;
             if (browser.isMobile.any) {
                 if (typeof $ == "undefined" || !$.cookie("alert")) {
                     alert(eval(this.mobile_error_message));
@@ -318,7 +319,7 @@ var SW_BS = {
         browser.isTransitionSupported = (function () {
             if (typeof $ == "undefined")
                 return false;
-            if (browser.error_css || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
+            if (browser.is_error_version || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
                 return false;
             var css_properties = {};
             for (var i = 0; i < prefixs.length; i++)
@@ -334,7 +335,7 @@ var SW_BS = {
         browser.isCss_vw_vh_Supported = (function () {
             if (typeof $ == "undefined")
                 return false;
-            if (browser.error_css || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
+            if (browser.is_error_version || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
                 return false;
 
             $("body").append("<div id='test_SW_BS' style='height: 50vh;'></div>");
@@ -373,7 +374,7 @@ var SW_BS = {
             if (!!sheet && !blacklist) {
                 try {
                     sheet.insertRule(rule, 0);
-                    supportFontFace = sheet.cssRules[0].cssText && ( /webfont/i ).test(sheet.cssRules[0].cssText);
+                    supportFontFace = sheet.cssRules[0].cssText && (/webfont/i).test(sheet.cssRules[0].cssText);
                     sheet.deleteRule(sheet.cssRules.length - 1);
                 } catch (e) {
                 }
@@ -383,7 +384,7 @@ var SW_BS = {
         browser.isRetinaDisplay = (function () {
             if (typeof $ == "undefined")
                 return false;
-            if (browser.error_css || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
+            if (browser.is_error_version || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
                 return false;
             $("body").append("<div id='test_SW_BS' class='is_retina'></div>");
             var is_retina = ($('#test_.SW_BS_is_retina').css('opacity') == '1') ? true : false;
@@ -393,7 +394,7 @@ var SW_BS = {
         browser.isImgSrcBase64Support = (function () {
             if (typeof $ == "undefined")
                 return false;
-            if (browser.error_css || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
+            if (browser.is_error_version || (browser.isMobile.Android && browser.fullVersion < 534) || (browser.isMobile.BlackBerry && browser.fullVersion < 537))
                 return false;
             $("body").append("<img id='test_SW_BS'>");
             $("#test_SW_BS").attr("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=");
@@ -402,17 +403,16 @@ var SW_BS = {
 
             return support;
         })();
-        browser.isLocalStorageSupported = typeof localStorage != "undefined";
-        browser.isSessionStorageSupported = typeof sessionStorage != "undefined";
-        if (browser.isSessionStorageSupported) {
-            try {
-                sessionStorage.setItem('test_SW_BS_sessionStorage', 1);
-                sessionStorage.removeItem('test_SW_BS_sessionStorage');
-            } catch (e) {
-                browser.isLocalStorageSupported = false;
-                browser.isSessionStorageSupported = false;
-            }
+        try {
+            browser.isLocalStorageSupported = typeof localStorage != "undefined";
+            browser.isSessionStorageSupported = typeof sessionStorage != "undefined";
+            sessionStorage.setItem('test_SW_BS_sessionStorage', 1);
+            sessionStorage.removeItem('test_SW_BS_sessionStorage');
+        } catch (e) {
+            browser.isLocalStorageSupported = false;
+            browser.isSessionStorageSupported = false;
         }
+
 
         browser.orientation_mode = {portrait: false, landscape: false};
         if (typeof orientation == "undefined") {

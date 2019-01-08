@@ -23,7 +23,6 @@ $global_settings["re_captcha"]["privatekey"] = "";
 $is_local_host = false;
 switch (get_http_host_name()) {
     case '192.168.0.3':
-        break;
     case "localhost":
         $is_local_host = true;
         break;
@@ -42,9 +41,10 @@ $global_settings['mysqli']["table_prefix"] = '';
 //******************************Настройки модулей***************************************************
 $module_settings['smart_text_box']['extend_editor_debug_mode'] = !$global_settings['css_js_minify'];
 $module_settings['smart_text_box']['debug_mode'] = !$global_settings['css_js_minify'];
-$module_settings['cache_img']['debug_mode'] = !$global_settings['css_js_minify'];
-$module_settings['error_notifier']['ignore_pattern'] = '/(NOTICE\: PHP message\: PHP Warning\:  Cannot modify header information \- headers already sent by)/ui';
-
+$module_settings['error_notifier']['is_enable'] = true;
+$module_settings['error_notifier']['ignore_pattern'] = '/(NOTICE\: PHP message\: PHP Warning\:  Cannot modify header information \- headers already sent by|script \'.*\' not found or unable to stat|client denied by server configuration: \/usr\/share\/phpmyadmin|\[autoindex:error\]|AH02032)/ui';
+$module_settings['error_notifier']['report_emails'] = "";
+$module_settings['error_notifier']['log_path'] = '';
 
 
 if(is_get('to_mobile')) {

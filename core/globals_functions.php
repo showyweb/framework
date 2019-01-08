@@ -1,5 +1,4 @@
 <?php
-$is_root_template = !is_ajax();
 $g_pattern_i = 0;
 $cur_variables = [];
 function set_variables(array $variables = [])
@@ -14,41 +13,77 @@ function get_variable($key)
     return isset($cur_variables[$key]) ? $cur_variables[$key] : null;
 }
 
-function render_template($pattern_name, array $set_variables = [])
+function is_inline_tpl($str)
 {
-    return _render_template($pattern_name, $set_variables);
+    $is_inline = false;
+    if(!is_null($str) && is_string($str) && substr_compare($str, '#inline', 0, 7) === 0)
+        $is_inline = true;
+    return $is_inline;
 }
 
-function render_inline_template($content, array $set_variables = [])
+$is_root_template = null;
+$last_pattern_name = "";
+/** Рендерит шаблон и возвращает результат в виде строки
+ * @param string $pattern_name_or_content Название шаблона (например: module_name/pattern_name, если указать только pattern_name, то для module_name будет указан текущий) или код шаблона (вначале кода нужно указать #inline)
+ * @param array $set_variables Установить переменные шаблона (переопределяет существующие)
+ * @param bool $skip_current_module Использовать родительский module_name, если он не указан в $pattern
+ * @return string
+ * @throws exception
+ */
+function render_template($pattern_name_or_content, array $set_variables = [], $skip_current_module = false)
 {
-    return _render_template($content, $set_variables, true);
-}
+    global $root, $module_settings, $module_all_settings, $core_pattern, $is_root_template, $g_pattern_i, $cur_variables, $last_pattern_name;
 
-function _render_template($pattern_name_or_content, array $set_variables = [], $is_inline = false)
-{
-    global $root, $module_settings, $module_all_settings, $core_pattern, $is_root_template, $g_pattern_i, $cur_variables;
+    $is_inline = is_inline_tpl($pattern_name_or_content);
+    if($is_inline) {
+        $pattern_name_or_content = mb_substr($pattern_name_or_content, 7, null, "UTF-8");
+        if(substr_compare($pattern_name_or_content, ' ', 0, 1) === 0)
+            $pattern_name_or_content = mb_substr($pattern_name_or_content, 1, null, "UTF-8");
+    }
+    if(is_null($is_root_template))
+        $is_root_template = !is_ajax() && !is_background_job();
     set_variables($set_variables);
     $out = "";
     $save_g_pattern_i = $g_pattern_i;
+    if(!$is_inline) {
+        $module_name = get_current_module_name();
+        if($skip_current_module) {
+            $skip_module_name = $module_name;
+            for ($depth = 3; $module_name === $skip_module_name; $depth += 3)
+                $module_name = get_current_module_name($depth);
+        }
+
+        if(!file_exists($root . 'modules/' . $pattern_name_or_content . '.html')) {
+            if(is_null($module_name) && !empty($last_pattern_name))
+                $module_name = explode("/", $last_pattern_name, 2)[0];
+            $pattern_name_or_content = $module_name . "/" . $pattern_name_or_content;
+            if(!file_exists($root . 'modules/' . $pattern_name_or_content . '.html'))
+                error("template $pattern_name_or_content not found");
+        }
+        $last_pattern_name = $pattern_name_or_content;
+    }
     $pattern_cache_name = !$is_inline ? str_replace("/", "_", $pattern_name_or_content) : "inline_" . crc32($pattern_name_or_content);
     if(!file_exists($root . '.cache/page_patterns/' . $pattern_cache_name) or (!$is_inline && filemtime($root . '.cache/page_patterns/' . $pattern_cache_name) < filemtime($root . 'modules/' . $pattern_name_or_content . '.html'))) {
         ini_set('pcre.backtrack_limit', '52428800');//50 mb
         $core_pattern_tmp = array();
         $text = $is_root_template ? $core_pattern['main'] : (!$is_inline ? open_txt_file($root . 'modules/' . $pattern_name_or_content, 'html') : $pattern_name_or_content);
         if($is_root_template)
-            $text .= "#include_modules(authorization,cache_img,head_manager)";
-        $matches = preg_split('/(#include_modules\\(([\\s\\S]+?)\\)|{{(.+?)}})/uim', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $text .= "#mod(authorization,cache_img,head_manager)";
+        $matches = preg_split('/(#mod\\(([\\s\\S]+?)\\)|{{(.+?)}})/uim', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $pattern = array();
         $core_pattern_tmp['pattern'] = null;
         $core_pattern_tmp['pattern_connectors'] = null;
         $core_pattern_tmp['p_connector_types'] = null;
         $core_pattern_tmp['pattern_settings'] = null;
-        for ($i = 0; isset($matches[$i]); $i += 3) {
-            $pattern[] = $matches[$i];
-            if(!isset($matches[$i + 2]))
-                break;
-            $is_module = utf8_strpos($matches[$i + 1], "#include_modules") !== false;
-            $tmp_mod_text = $matches[$i + 2];
+        for ($i = 0; isset($matches[$i]); $i++) {
+            $cmp_str = mb_substr($matches[$i], 0, 4, "UTF-8");
+            if($cmp_str !== "#mod" && substr_compare($cmp_str, "{{", 0, 2) !== 0) {
+                $pattern[] = $matches[$i];
+                continue;
+            } else
+                $is_module = utf8_strpos($matches[$i], "#mod") !== false;
+            $tmp_mod_text = $matches[$i + 1];
+            $i++;
             $tmp_mod_settings = null;
             if($is_module) {
                 preg_match_all('/(([^,]+)(\\[([^[\\]]+)\\]))|([^,]+)/u', $tmp_mod_text, $settings_matches);
@@ -56,7 +91,7 @@ function _render_template($pattern_name_or_content, array $set_variables = [], $
                     $tmp_mod_settings = array();
                     for ($i3 = 0; $i3 < count($settings_matches[4]); $i3++) {
                         $tmp = $settings_matches[4][$i3];
-                        preg_match_all('/([^,]+?)=({[\\s\\S]+?}|(\'[\\s\\S]+?(?<!\\\)\')|("[\\s\\S]+?(?<!\\\)")|\\d*)/u', $tmp, $settings_matches2);
+                        preg_match_all('/([^,]+?)=({[\\s\\S]*?}|(\'[\\s\\S]*?(?<!\\\)\')|("[\\s\\S]+?(?<!\\\)")|\\d*)/u', $tmp, $settings_matches2);
                         for ($i2 = 0; $i2 < count($settings_matches2[2]); $i2++) {
                             $var_key = preg_replace("/[ \\r\\n]/u", "", $settings_matches2[1][$i2]);
                             preg_match("/^{[\\s\\S]+}$/u", $settings_matches2[2][$i2], $res);
@@ -75,6 +110,7 @@ function _render_template($pattern_name_or_content, array $set_variables = [], $
 
             $core_pattern_tmp['pattern_settings'][] = $tmp_mod_settings;
             $tmp_mod_text = preg_replace('/\[[^[\]]+\]/ui', '', $tmp_mod_text);
+            $tmp_mod_text = preg_replace('/ /u', "", $tmp_mod_text);
             $tmp_mod_arr = explode(",", $tmp_mod_text);
             $core_pattern_tmp['p_connector_types'][] = $is_module ? "module" : "variable";
             $core_pattern_tmp['pattern_connectors'][] = $tmp_mod_arr;
@@ -128,6 +164,8 @@ function _render_template($pattern_name_or_content, array $set_variables = [], $
                         $g_pattern_i = $pattern_i;
                         $out .= $connector_name::main();
                         unset($exec_class);
+                        if(!$is_inline)
+                            $last_pattern_name = $pattern_name_or_content;
                         break;
                     case "variable":
                         $out .= isset($cur_variables[$connector_name]) ? $cur_variables[$connector_name] : "";
@@ -138,6 +176,7 @@ function _render_template($pattern_name_or_content, array $set_variables = [], $
         $pattern_i++;
     }
     $g_pattern_i = $save_g_pattern_i;
+
     return $out;
 }
 
@@ -159,6 +198,8 @@ function to_boolean($val)
 
 function redirect($query_string, $location_ = "PHP_SELF")
 {
+    if(!empty($query_string))
+        $query_string = "?" . str_replace("?", "", $query_string);
     if($location_ == "PHP_SELF")
         $location_ = $_SERVER['PHP_SELF'];
     header('Location:' . $location_ . $query_string, TRUE, 301);
@@ -241,6 +282,17 @@ function create_email_header($name, $str, $utf8_str = null)
 function send_html_email($to, $subject, $message, $List_Unsubscribe_url = null)
 {
     global $global_settings;
+    if(utf8_strpos($to, ",") !== false) {
+        $to = str_replace(" ", "", $to);
+        $to = explode(",", $to);
+    }
+    if(is_array($to)) {
+        $is_false = false;
+        foreach ($to as $email)
+            if(!send_html_email($email, $subject, $message, $List_Unsubscribe_url))
+                $is_false = true;
+        return !$is_false;
+    }
     ob_implicit_flush();
 
     try {
@@ -427,7 +479,7 @@ function characters_unescape($variable)
  */
 function xss_filter($variable, $max_level = false)
 {
-    return qdbm_ext_tools::xss_filter($variable, $max_level);
+    return qdbm\ext_tools::xss_filter($variable, $max_level);
 }
 
 function save_remote_web_file($input_file, $output_file)
@@ -458,12 +510,12 @@ function save_remote_web_file($input_file, $output_file)
 
 function open_txt_file($path, $extn = 'txt')
 {
-    return qdbm_ext_tools::open_txt_file($path, $extn);
+    return qdbm\ext_tools::open_txt_file($path, $extn);
 }
 
 function save_to_text_file($path, $text, $extn = 'txt')
 {
-    return qdbm_ext_tools::save_to_text_file($path, $text, $extn);
+    return qdbm\ext_tools::save_to_text_file($path, $text, $extn);
 
 }
 
@@ -481,10 +533,12 @@ function error($mes)
     throw new exception($mes);
 }
 
-function error_log_e(Throwable $e)
+function error_log_e(Throwable $e, $show_display = false)
 {
     $text = $e->getFile() . ":" . $e->getLine() . " - " . $e->getMessage();
     error_log($text);
+    if($show_display)
+        echo $text . "\n";
 }
 
 function get_name_back_class($depth = 0)
@@ -668,9 +722,11 @@ function replace_param_in_query_string($query_string, $param, $new_value)
 /**
  * @param null $key
  * @param string $module_name current или global
+ * @param bool $not_parse_inline_tpl
  * @return array|bool|int|mixed|null|string
+ * @throws exception
  */
-function get_settings($key = null, $module_name = "current")
+function get_settings($key = null, $module_name = "current", $not_parse_inline_tpl = false)
 {
     global $g_pattern_i, $module_all_settings, $module_settings, $global_settings;
     if(is_null($module_name)) $module_name = "current";
@@ -688,10 +744,17 @@ function get_settings($key = null, $module_name = "current")
                 $settings = isset($module_settings[$module_name]) ? $module_settings[$module_name] : null;
             if(is_null($key))
                 return $settings;
-            else
-                return isset($settings[$key]) ? $settings[$key] : null;
+            else {
+                $res = isset($settings[$key]) ? $settings[$key] : null;
+                if($not_parse_inline_tpl)
+                    return $res;
+                if(is_inline_tpl($res))
+                    $res = render_template($res);
+                return $res;
+            }
     }
 }
+
 
 function get_current_module_name($depth = 0)
 {
@@ -777,6 +840,14 @@ function utf8_strlen($str)
 {
     return mb_strlen($str, 'UTF-8');
 }
+
+function utf8_ucfirst($string)
+{
+    $enc = 'UTF-8';
+    return mb_strtoupper(mb_substr($string, 0, 1, $enc), $enc) .
+        mb_substr($string, 1, mb_strlen($string, $enc), $enc);
+}
+
 
 function get_bcscale($val)
 {
@@ -900,4 +971,10 @@ function preg_errtxt($errcode)
     }
 
     return array_key_exists($errcode, $errtext) ? $errtext[$errcode] : NULL;
+}
+
+function clear_slashes($path)
+{
+    $path = preg_replace('/\\/+/u', '/', $path);
+    return $path;
 }

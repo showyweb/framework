@@ -10,7 +10,7 @@ class head_manager
         'add_html' => ''
     ];
 
-   static function main()
+    static function main()
     {
         global $global_settings, $root, $cms_result;
 
@@ -71,8 +71,9 @@ class head_manager
             $result['css'] = "";
         if(!isset($result['js']))
             $result['js'] = "";
-        $t_r = getcwd();
-        if(!preg_match("/^(http\\:\\/\\/|https\\:\\/\\/|\\/)/ui", $url) && !file_exists($t_r . $url)) {
+        $url= '/'.$url;
+        $t_r = getcwd() ;
+        if(!preg_match("/^(http\\:\\/\\/|https\\:\\/\\/)/ui", $url) && !file_exists($t_r . $url)) {
             $class_name = get_current_module_name(2);
             $t_url = "/core/core_modules/" . $class_name . "/" . $s_url;
             if(file_exists($t_r . $t_url))
@@ -117,6 +118,7 @@ class head_manager
                     $x_q = open_txt_file($url_cache_file_name);
             }
             $url = ($is_minify ? $web_url_cache_file_name : $url) . $x_q;
+            $url = clear_slashes($url);
         }
         switch ($type) {
             case "js":
@@ -141,8 +143,8 @@ class head_manager
     static function append_head($html)
     {
         if(isset(static::$result['add_html']))
-            static::$result['add_html'] = [];
-        static::$result['add_html'][] = '
+            static::$result['add_html'] = '';
+        static::$result['add_html'] = '
 ' . $html;
     }
 

@@ -1,12 +1,12 @@
 <?php
 
-class smart_text_box_db_c extends qdbm_schema
+class smart_text_box_db_c extends qdbm\schema
 {
     public $tab_name = 'smart_text_box';
-    const name = array('type' => qdbm_type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
-    const data = array('type' => qdbm_type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const images_info = array('type' => qdbm_type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
-    const is_public = array('type' => qdbm_type_column::bool, 'is_xss_filter' => true, 'is_add_index' => true);
+    const name = array('type' => qdbm\type_column::small_string, 'is_xss_filter' => true, 'is_add_index' => true);
+    const data = array('type' => qdbm\type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const images_info = array('type' => qdbm\type_column::string, 'is_xss_filter' => false, 'is_add_index' => false);
+    const is_public = array('type' => qdbm\type_column::bool, 'is_xss_filter' => true, 'is_add_index' => true);
 }
 
 class smart_text_box_api
@@ -20,7 +20,7 @@ class smart_text_box_api
     public function __construct()
     {
         $this->db_c = new smart_text_box_db_c();
-        $this->db = new qdbm($this->db_c);
+        $this->db = new qdbm\db($this->db_c);
         return $this;
     }
 
@@ -55,7 +55,7 @@ class smart_text_box_api
         $id = $db->get_nii();
         $result = null;
         if($id !== 1)
-            $result = $db->get_rows(null, (new qdbm_where())->equally('name', $name));
+            $result = $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('name', $name)));
         if(is_null($result))
             error("name $name not found");
         $id = $result[0]['id'];
@@ -111,7 +111,7 @@ class smart_text_box_api
         ini_set('pcre.backtrack_limit', '52428800');//50 mb
         $db = $this->db;
         $db->smart_write_lock();
-        $result = $db->get_rows(null, (new qdbm_where())->equally('name', $name));
+        $result = $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('name', $name)));
         if(is_null($result))
             error("name_not_found");
 
@@ -190,7 +190,7 @@ class smart_text_box_api
         $id = $db->get_nii();
         $result = null;
         if($id != 1)
-            $result = $db->get_rows(null, (new qdbm_where())->equally('name', $name));
+            $result = $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('name', $name)));
         if(!is_null($result)) {
             $id = $result[0]['id'];
             $images_info = $result[0]['images_info'];
@@ -242,10 +242,10 @@ class smart_text_box_api
         if($new_id == 1)
             $this->update_box($name, 'Новый текст', true, true);
         $name = xss_filter($name);
-        $where = (new qdbm_where())->equally('name', $name);
+        $where = (new qdbm\where())->equally('name', $name);
         if($only_public)
             $where->equally('is_public', true);
-        $result = $db->get_rows(null, $where);
+        $result = $db->get_rows(new qdbm\select_q(null, $where));
         if($result == null) {
             $str = "Новый текст";
             $this->update_box($name, $str, true, true);
@@ -258,15 +258,15 @@ class smart_text_box_api
 
     function get_all_boxes($offset = null, $limit = null, $only_public = true)
     {
-        $where = new qdbm_where();
+        $where = new qdbm\where();
         if($only_public)
             $where->equally('is_public', true);
         $db = $this->db;
-        return $db->get_rows([
+        return $db->get_rows(new qdbm\select_q([
             'where' => $where,
             'offset' => $offset,
             'limit' => $limit
-        ]);
+        ]));
     }
 
     function remove_box($name, $admin = false)
@@ -274,7 +274,7 @@ class smart_text_box_api
         if(!authorization_api::is_admin() && !$admin)
             error_alert_not_log('Недостаточно прав');
         $db = $this->db;
-        $result = $db->get_rows(null, (new qdbm_where())->equally('name', $name));
+        $result = $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('name', $name)));
         if(is_null($result))
             error('smart_text_box ' . $name . ' not found');
 
@@ -296,7 +296,7 @@ class smart_text_box_api
             }
         }
 
-        $db->remove_rows((new qdbm_where())->equally('name', $name));
+        $db->remove_rows((new qdbm\where())->equally('name', $name));
         return true;
     }
 

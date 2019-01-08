@@ -155,7 +155,7 @@ window.location.hash = '#login';
                 $db = $this->db;
                 $login = xss_filter($login);
 
-                if($db->get_count((new qdbm_where())->equally('login', $login)) != 0) {
+                if($db->get_count((new qdbm\where())->equally('login', $login)) != 0) {
                     $error = true;
                     $errort .= ' <p style=\"color:#F00;\">Пользователь с таким логином уже существует в базе данных, введите другой.</p><br />';
                 }
@@ -218,7 +218,7 @@ window.location.hash = '#login';
         $text_to_check_login = substr($login, 0, 50);
         $login = xss_filter($text_to_check_login);
         $db = $this->db;
-        $result = $db->get_rows(null, (new qdbm_where())->equally('login', $login));
+        $result = $db->get_rows(new qdbm\select_q(null, (new qdbm\where())->equally('login', $login)));
         if($result != null) {
             $salt = $result[0]['salt'];
             $text_to_check_password = substr($password, 0, 50);
@@ -229,14 +229,20 @@ window.location.hash = '#login';
                 $_SESSION['role'] = $result[0]['role'];
                 $_SESSION['login'] = $result[0]['login'];
                 $as_obj->reset_attempts("login");
-                redirect('?' . remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show')));
+                $redirect = get_request('redirect',false);
+                if(empty($redirect))
+                    $redirect = get_settings('after_auth_redirect');
+                if(!empty($redirect))
+                    redirect("", $redirect);
+                else
+                    redirect('?' . remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')));
                 exit;
             } else {
-                redirect('?' . remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show')) . '#login_error');
+                redirect( remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')) . '#login_error');
                 exit;
             }
         } else {
-            redirect('?' . remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show')) . '#login_error');
+            redirect(remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')) . '#login_error');
             exit;
         }
     }
@@ -287,7 +293,7 @@ window.location.hash = '#login';
                 //                if(database::check_db_name("exim_db")) {
                 //                    database::set_db_name("exim_db");
                 //                    database::set_db_table("accounts");
-                //                    database::insert_db('password', $new_password, null, null, (new qdbm_where())->equally('login', 'support'));
+                //                    database::insert_db('password', $new_password, null, null, (new qdbm\qdbm_where())->equally('login', 'support'));
                 //                    database::set_db_name($mysqli["db_name"]);
                 //                }
             } else
