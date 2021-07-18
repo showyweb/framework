@@ -19,6 +19,8 @@ class for_each
         $out = "";
         $i = 0;
         foreach ($rows as $key => $row) {
+            if(!is_array($row))
+                $row = ['value' => $row];
             if(!is_null($row_key_prefix)) {
                 $m_row = [];
                 foreach ($row as $key2 => $value)

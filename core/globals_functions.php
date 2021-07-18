@@ -69,7 +69,7 @@ function render_template($pattern_name_or_content, array $set_variables = [], $s
         $text = $is_root_template ? $core_pattern['main'] : (!$is_inline ? open_txt_file($root . 'modules/' . $pattern_name_or_content, 'html') : $pattern_name_or_content);
         if($is_root_template)
             $text .= "#mod(authorization,cache_img,head_manager)";
-        $matches = preg_split('/(#mod\\(([\\s\\S]+?)\\)|{{(.+?)}})/uim', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $matches = preg_split('/(#mod\\(([\\s\\S]+?)\\)|{{(.+?)}})/uim', ' ' . $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $pattern = array();
         $core_pattern_tmp['pattern'] = null;
         $core_pattern_tmp['pattern_connectors'] = null;
@@ -259,7 +259,7 @@ function u_rand_key_generate()
 
 function check_email_format($email)
 {
-    return (preg_match("/^([0-9a-z]([-_.]?[0-9a-z])*@[0-9a-z]([-.]?[0-9a-z])*\\.[a-wyz][a-z](fo|g|l|m|mes|o|op|pa|ro|seum|t|u|v|z)?)$/i", $email)) ? true : false;
+    return (preg_match("/^([0-9a-z]([-_.]?[0-9a-z])*@[0-9a-z]([-.]?[0-9a-z])*\\.[a-z]+)$/i", $email)) ? true : false;
 
 }
 
@@ -529,7 +529,6 @@ function url_transliteratsiya($text, $cyrillic_not_remove = false)
 
 function error($mes)
 {
-
     throw new exception($mes);
 }
 

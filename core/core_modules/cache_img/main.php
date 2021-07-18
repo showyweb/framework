@@ -17,10 +17,11 @@ class cache_img
 
         $min_cp = $debug_mode ? ".iife" : ".min";
         $min_p = $debug_mode ? "" : ".min";
-        head_manager::import_js("/js/cssobj/dist/cssobj$min_cp.js");
+        head_manager::import_js("/custom_libraries/FastBackground/third_party_libs/cssobj/dist/cssobj$min_cp.js");
         //        if(($debug_mode))
         //            head_manager::import_js("/custom_libraries/_FastBackground/fast_background$min_p.js");
         //        else
+        head_manager::import_js("/custom_libraries/FastBackground/index.php?fast_background=fc_script");
         head_manager::import_js("/custom_libraries/FastBackground/fast_background$min_p.js");
         head_manager::import_js("loader.js");
 

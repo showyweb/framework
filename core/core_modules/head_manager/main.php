@@ -84,6 +84,8 @@ class head_manager
                     $url = "/modules/" . explode("/", $start_template, 2)[0] . "/" . $s_url;
                 if(!file_exists($t_r . $url))
                     $url = "/js/" . $s_url;
+                if(!file_exists($t_r . $url))
+                    $url = $s_url;
             }
         }
         if(file_exists($t_r . $url)) {

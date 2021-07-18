@@ -229,7 +229,7 @@ window.location.hash = '#login';
                 $_SESSION['role'] = $result[0]['role'];
                 $_SESSION['login'] = $result[0]['login'];
                 $as_obj->reset_attempts("login");
-                $redirect = get_request('redirect',false);
+                $redirect = get_request('redirect', false);
                 if(empty($redirect))
                     $redirect = get_settings('after_auth_redirect');
                 if(!empty($redirect))
@@ -238,7 +238,7 @@ window.location.hash = '#login';
                     redirect('?' . remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')));
                 exit;
             } else {
-                redirect( remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')) . '#login_error');
+                redirect(remove_param_in_query_string($_SERVER['QUERY_STRING'], array('authorization', 'login', 'password', 'captcha_show', 'redirect')) . '#login_error');
                 exit;
             }
         } else {
@@ -324,7 +324,7 @@ window.location.hash = '#login';
             $call_he = $arr['call_hour_end'];
             $n_obj = new notify();
             $notify_res = $n_obj->get();
-            $notify_len = count($notify_res);
+            $notify_len = !empty($notify_res) ? count($notify_res) : 0;
             if(is_null($notify_len) or $notify_len == 0)
                 $notify_len = 0;
             $notify_html = "";

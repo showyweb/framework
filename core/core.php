@@ -1,7 +1,7 @@
 <?php
 /**
  * Name:    SHOWYWeb Framework
- * Version:  7.1.0
+ * Version:  7.3.3
  * Author:  Novojilov Pavel Andreevich
  * Support: http://SHOWYWEB.ru
  * License: Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) https://creativecommons.org/licenses/by-sa/4.0/
@@ -75,8 +75,37 @@ $module_settings = array();
 $module_all_settings = array();
 require_once "globals_functions.php";
 import_custom_library("QuickDBM/QuickDBM.php");
-require_once 'session_start.php';
+
+
+//$text = file_get_contents("test.log");
+//file_put_contents("test.log", $text . "\n" . $_SERVER['REMOTE_ADDR'] . " - 1 -" . date("Y-m-d H:i:s"));
+session_start(['cookie_httponly' => true, 'cookie_lifetime' => 86400]);
+//$text = file_get_contents("test.log");
+//file_put_contents("test.log", $text . "\n" . $_SERVER['REMOTE_ADDR'] . " - 2 -" . date("Y-m-d H:i:s"));
+if(isset($_COOKIE['PHPSESSID']))
+    setcookie('PHPSESSID', $_COOKIE['PHPSESSID'], time() + 86400, "", "", false, true);
+
 require_once "$root/settings.php";
+
+
+if(isset($_SERVER['HTTP_X_REAL_IP']))
+    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_REAL_IP'];
+if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+    $porxy = $_SERVER['HTTP_X_FORWARDED_FOR'];
+else
+    $porxy = "no";
+
+if($global_settings['use_ip_for_hash_session']) {
+    if(isset($_SERVER['HTTP_USER_AGENT']))
+        $vers = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'] . $porxy . $_SERVER['SERVER_NAME']);
+    else
+        $vers = md5($_SERVER['REMOTE_ADDR'] . $porxy . $_SERVER['SERVER_NAME']);
+} else {
+    if(isset($_SERVER['HTTP_USER_AGENT']))
+        $vers = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['SERVER_NAME']);
+    else
+        $vers = md5($_SERVER['SERVER_NAME']);
+}
 
 
 qdbm\db::set_mysqli_auth($global_settings['mysqli']);
